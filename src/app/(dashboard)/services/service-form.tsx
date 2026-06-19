@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import type { Service } from "@/lib/types";
 
 export function ServiceForm({ service }: { service?: Service }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function handleSubmit(formData: FormData) {
@@ -21,6 +23,7 @@ export function ServiceForm({ service }: { service?: Service }) {
           await createService(formData);
         }
         toast.success(service ? "Service mis à jour." : "Service créé.");
+        router.push("/services");
       } catch {
         toast.error("Une erreur est survenue.");
       }
