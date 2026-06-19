@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import type { Article } from "@/lib/types";
 
 export function ArticleForm({ article }: { article?: Article }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function handleSubmit(formData: FormData) {
@@ -23,8 +25,11 @@ export function ArticleForm({ article }: { article?: Article }) {
         toast.success(
           article ? "Article mis à jour." : "Article créé avec succès.",
         );
-      } catch {
-        toast.error("Une erreur est survenue.");
+        router.push("/articles");
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Une erreur est survenue.",
+        );
       }
     });
   }
@@ -58,9 +63,15 @@ export function ArticleForm({ article }: { article?: Article }) {
           id="image_url"
           name="image_url"
           type="url"
+          pattern="https?://.*"
           defaultValue={article?.image_url ?? ""}
-          placeholder="https://…"
+          placeholder="https://exemple.com/image.jpg"
+          title="Collez une URL commençant par http:// ou https://"
         />
+        <p className="text-xs text-gray-500">
+          Collez uniquement une URL publique. Les images encodées en base64 ne
+          sont pas acceptées.
+        </p>
       </div>
 
       <div className="flex gap-3 pt-2">
