@@ -1,9 +1,11 @@
+// Champs en camelCase : ce type reflète maintenant la réponse JSON de
+// civic_api (Prisma), plus les anciennes colonnes snake_case de Supabase.
 export type Article = {
   id: string;
   title: string;
   content: string;
-  image_url: string | null;
-  published_at: string;
+  imageUrl: string | null;
+  publishedAt: string;
 };
 
 export type Poll = {

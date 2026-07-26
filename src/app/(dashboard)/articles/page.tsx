@@ -1,15 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { ArticlesTable } from "./articles-table";
+import { getArticles } from "@/app/actions/articles";
 
 export default async function ArticlesPage() {
-  const supabase = await createClient();
-  const { data: articles } = await supabase
-    .from("articles")
-    .select("id, title, published_at, image_url")
-    .order("published_at", { ascending: false });
+  const articles = await getArticles();
 
   return (
     <div className="space-y-6">
@@ -22,7 +18,7 @@ export default async function ArticlesPage() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200">
-        <ArticlesTable articles={articles ?? []} />
+        <ArticlesTable articles={articles} />
       </div>
     </div>
   );

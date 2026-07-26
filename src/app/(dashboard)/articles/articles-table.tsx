@@ -22,15 +22,13 @@ import { Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import type { Article } from "@/lib/types";
 
-type Article = {
-  id: string;
-  title: string;
-  published_at: string;
-  image_url: string | null;
-};
-
-export function ArticlesTable({ articles }: { articles: Article[] }) {
+export function ArticlesTable({
+  articles,
+}: {
+  articles: Pick<Article, "id" | "title" | "publishedAt">[];
+}) {
   const [pending, startTransition] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -68,7 +66,7 @@ export function ArticlesTable({ articles }: { articles: Article[] }) {
           <TableRow key={article.id}>
             <TableCell className="font-medium">{article.title}</TableCell>
             <TableCell className="text-gray-500 text-sm">
-              {new Date(article.published_at).toLocaleDateString("fr-FR", {
+              {new Date(article.publishedAt).toLocaleDateString("fr-FR", {
                 day: "2-digit",
                 month: "long",
                 year: "numeric",

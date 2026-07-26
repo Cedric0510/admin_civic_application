@@ -1,10 +1,19 @@
+import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
+import { getCurrentStaff } from "@/lib/session";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Le proxy ne fait qu'un contrôle de présence du cookie ; ici on revalide
+  // réellement le token auprès de civic_api avant de rendre quoi que ce soit.
+  const staff = await getCurrentStaff();
+  if (!staff) {
+    redirect("/login");
+  }
+
   return (
     <div className="flex min-h-screen">
       <Sidebar />

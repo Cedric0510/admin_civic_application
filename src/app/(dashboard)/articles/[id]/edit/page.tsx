@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import { getArticle } from "@/app/actions/articles";
 import { ArticleForm } from "../../article-form";
 
 export default async function EditArticlePage({
@@ -8,12 +8,7 @@ export default async function EditArticlePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: article } = await supabase
-    .from("articles")
-    .select()
-    .eq("id", id)
-    .single();
+  const article = await getArticle(id);
 
   if (!article) notFound();
 

@@ -64,7 +64,7 @@ export function ArticleForm({ article }: { article?: Article }) {
           name="image_url"
           type="url"
           pattern="https?://.*"
-          defaultValue={article?.image_url ?? ""}
+          defaultValue={article?.imageUrl ?? ""}
           placeholder="https://exemple.com/image.jpg"
           title="Collez une URL commençant par http:// ou https://"
         />
