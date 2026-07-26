@@ -1,16 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { ServicesTable } from "./services-table";
+import { getServices } from "@/app/actions/services";
 
 export default async function ServicesPage() {
-  const supabase = await createClient();
-  const { data: services } = await supabase
-    .from("services")
-    .select("*")
-    .order("category", { ascending: true })
-    .order("name", { ascending: true });
+  const services = await getServices();
 
   return (
     <div className="space-y-6">
@@ -23,7 +18,7 @@ export default async function ServicesPage() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200">
-        <ServicesTable services={services ?? []} />
+        <ServicesTable services={services} />
       </div>
     </div>
   );

@@ -1,15 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { PollsTable } from "./polls-table";
+import { getPolls } from "@/app/actions/polls";
 
 export default async function PollsPage() {
-  const supabase = await createClient();
-  const { data: polls } = await supabase
-    .from("polls")
-    .select("*, poll_options(*)")
-    .order("created_at", { ascending: false });
+  const polls = await getPolls();
 
   return (
     <div className="space-y-6">
@@ -22,7 +18,7 @@ export default async function PollsPage() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200">
-        <PollsTable polls={polls ?? []} />
+        <PollsTable polls={polls} />
       </div>
     </div>
   );

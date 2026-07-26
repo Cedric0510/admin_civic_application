@@ -1,8 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { getPoll } from "@/app/actions/polls";
 
 export default async function PollDetailPage({
   params,
@@ -10,20 +10,12 @@ export default async function PollDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
-
-  const { data: poll } = await supabase
-    .from("polls")
-    .select("*, poll_options(*)")
-    .eq("id", id)
-    .single();
+  const poll = await getPoll(id);
 
   if (!poll) notFound();
 
-  const totalVotes = poll.poll_options.reduce(
-    (sum: number, o: { vote_count: number }) => sum + o.vote_count,
-    0,
-  );
+  const options = poll.options ?? [];
+  const totalVotes = options.reduce((sum, o) => sum + o.voteCount, 0);
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -44,22 +36,19 @@ export default async function PollDetailPage({
         <p className="text-sm text-gray-500">{totalVotes} vote{totalVotes !== 1 ? "s" : ""} au total</p>
 
         <div className="space-y-4">
-          {poll.poll_options
-            .sort(
-              (a: { vote_count: number }, b: { vote_count: number }) =>
-                b.vote_count - a.vote_count,
-            )
-            .map((option: { id: string; option_text: string; vote_count: number }) => {
+          {[...options]
+            .sort((a, b) => b.voteCount - a.voteCount)
+            .map((option) => {
               const pct =
                 totalVotes > 0
-                  ? Math.round((option.vote_count / totalVotes) * 100)
+                  ? Math.round((option.voteCount / totalVotes) * 100)
                   : 0;
               return (
                 <div key={option.id} className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium">{option.option_text}</span>
+                    <span className="font-medium">{option.optionText}</span>
                     <span className="text-gray-500">
-                      {option.vote_count} vote{option.vote_count !== 1 ? "s" : ""} ({pct}%)
+                      {option.voteCount} vote{option.voteCount !== 1 ? "s" : ""} ({pct}%)
                     </span>
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">

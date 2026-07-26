@@ -116,11 +116,10 @@ export function AppointmentsTable({
             {appointments.map((appt) => (
               <TableRow key={appt.id}>
                 <TableCell>
-                  <p className="font-medium">{appt.name}</p>
-                  <p className="text-xs text-gray-400">{appt.email}</p>
+                  <p className="font-medium">{appt.citizen.email}</p>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline">{appt.service}</Badge>
+                  <Badge variant="outline">{appt.service.name}</Badge>
                 </TableCell>
                 <TableCell className="text-sm text-gray-500">
                   {new Date(appt.date).toLocaleDateString("fr-FR", {
@@ -150,8 +149,8 @@ export function AppointmentsTable({
                       <DialogHeader>
                         <DialogTitle>Supprimer le rendez-vous ?</DialogTitle>
                         <DialogDescription>
-                          Le rendez-vous de {appt.name} sera définitivement
-                          supprimé.
+                          Le rendez-vous de {appt.citizen.email} sera
+                          définitivement supprimé.
                         </DialogDescription>
                       </DialogHeader>
                       <DialogFooter>

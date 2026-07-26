@@ -24,11 +24,9 @@ import { Trash2, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import type { Poll, PollOption } from "@/lib/types";
+import type { Poll } from "@/lib/types";
 
-type PollWithOptions = Poll & { poll_options: PollOption[] };
-
-export function PollsTable({ polls }: { polls: PollWithOptions[] }) {
+export function PollsTable({ polls }: { polls: Poll[] }) {
   const [pending, startTransition] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -75,8 +73,8 @@ export function PollsTable({ polls }: { polls: PollWithOptions[] }) {
       </TableHeader>
       <TableBody>
         {polls.map((poll) => {
-          const totalVotes = poll.poll_options.reduce(
-            (sum, o) => sum + o.vote_count,
+          const totalVotes = poll.options.reduce(
+            (sum, o) => sum + o.voteCount,
             0,
           );
           return (
@@ -84,17 +82,17 @@ export function PollsTable({ polls }: { polls: PollWithOptions[] }) {
               <TableCell className="font-medium">{poll.question}</TableCell>
               <TableCell className="text-gray-500">{totalVotes}</TableCell>
               <TableCell>
-                <Badge variant={poll.is_active ? "default" : "secondary"}>
-                  {poll.is_active ? "Actif" : "Inactif"}
+                <Badge variant={poll.isActive ? "default" : "secondary"}>
+                  {poll.isActive ? "Actif" : "Inactif"}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end items-center gap-2">
                   <Switch
-                    checked={poll.is_active}
+                    checked={poll.isActive}
                     disabled={pending}
                     onCheckedChange={() =>
-                      handleToggle(poll.id, poll.is_active)
+                      handleToggle(poll.id, poll.isActive)
                     }
                   />
                   <Link

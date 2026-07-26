@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { getAppointments } from "@/app/actions/appointments";
 import { AppointmentsTable } from "./appointments-table";
 
 export default async function AppointmentsPage({
@@ -7,24 +7,15 @@ export default async function AppointmentsPage({
   searchParams: Promise<{ service?: string; date?: string }>;
 }) {
   const { service, date } = await searchParams;
-  const supabase = await createClient();
+  const allAppointments = await getAppointments();
 
-  let query = supabase
-    .from("appointments")
-    .select("*")
-    .order("date", { ascending: true });
-
-  if (service) query = query.eq("service", service);
-  if (date) query = query.eq("date", date);
-
-  const { data: appointments } = await query;
-
-  const { data: allAppointments } = await supabase
-    .from("appointments")
-    .select("service");
+  const appointments = allAppointments
+    .filter((a) => !service || a.service.name === service)
+    .filter((a) => !date || a.date.slice(0, 10) === date)
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   const services = Array.from(
-    new Set(allAppointments?.map((a) => a.service) ?? []),
+    new Set(allAppointments.map((a) => a.service.name)),
   ).sort();
 
   return (
@@ -33,7 +24,7 @@ export default async function AppointmentsPage({
 
       <div className="bg-white rounded-xl border border-gray-200">
         <AppointmentsTable
-          appointments={appointments ?? []}
+          appointments={appointments}
           services={services}
           currentService={service}
           currentDate={date}

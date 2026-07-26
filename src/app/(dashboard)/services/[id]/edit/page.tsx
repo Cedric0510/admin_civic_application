@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import { getService } from "@/app/actions/services";
 import { ServiceForm } from "../../service-form";
 
 export default async function EditServicePage({
@@ -8,12 +8,7 @@ export default async function EditServicePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: service } = await supabase
-    .from("services")
-    .select()
-    .eq("id", id)
-    .single();
+  const service = await getService(id);
 
   if (!service) notFound();
 

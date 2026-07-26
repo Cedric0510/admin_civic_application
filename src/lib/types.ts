@@ -11,26 +11,27 @@ export type Article = {
 export type Poll = {
   id: string;
   question: string;
-  is_active: boolean;
-  created_at: string;
-  poll_options?: PollOption[];
+  isActive: boolean;
+  createdAt: string;
+  options: PollOption[];
 };
 
 export type PollOption = {
   id: string;
-  poll_id: string;
-  option_text: string;
-  vote_count: number;
+  pollId: string;
+  optionText: string;
+  voteCount: number;
 };
 
+// citizen/service en relations imbriquées (GET /appointments côté staff) :
+// plus de name/email en texte libre, ni de service en chaîne.
 export type Appointment = {
   id: string;
-  name: string;
-  email: string;
-  service: string;
   date: string;
   message: string | null;
-  created_at: string;
+  createdAt: string;
+  citizen: { email: string };
+  service: { name: string };
 };
 
 export type Service = {
