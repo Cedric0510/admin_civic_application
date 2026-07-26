@@ -1,27 +1,26 @@
-import { createClient } from "@/lib/supabase/server";
 import { Newspaper, CalendarDays, BarChart3, Users } from "lucide-react";
+import { api } from "@/lib/api/client";
+import { getCurrentStaff } from "@/lib/session";
 
-async function getStats() {
-  const supabase = await createClient();
+type CommuneStats = {
+  articles: number;
+  appointments: number;
+  activePolls: number;
+  citizens: number;
+};
 
-  const [articles, appointments, polls, profiles] = await Promise.all([
-    supabase.from("articles").select("id", { count: "exact", head: true }),
-    supabase.from("appointments").select("id", { count: "exact", head: true }),
-    supabase
-      .from("polls")
-      .select("id", { count: "exact", head: true })
-      .eq("is_active", true),
-    supabase
-      .from("user_profiles")
-      .select("id", { count: "exact", head: true }),
-  ]);
-
-  return {
-    articles: articles.count ?? 0,
-    appointments: appointments.count ?? 0,
-    activePolls: polls.count ?? 0,
-    citizens: profiles.count ?? 0,
-  };
+async function getStats(): Promise<CommuneStats> {
+  const staff = await getCurrentStaff();
+  if (!staff?.commune) {
+    return { articles: 0, appointments: 0, activePolls: 0, citizens: 0 };
+  }
+  try {
+    return await api.get<CommuneStats>("/communes/me/stats");
+  } catch {
+    // Réservé à ADMINISTRATEUR/SUPER_ADMIN côté civic_api : un agent
+    // connecté verra un tableau de bord à zéro plutôt qu'une erreur.
+    return { articles: 0, appointments: 0, activePolls: 0, citizens: 0 };
+  }
 }
 
 const statCards = [

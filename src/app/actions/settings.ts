@@ -1,18 +1,20 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { api } from "@/lib/api/client";
+import type { CitySettings } from "@/lib/types";
+
+export async function getSettings(): Promise<CitySettings | null> {
+  try {
+    const commune = await api.get<{ name: string }>("/communes/me");
+    return { village_name: commune.name };
+  } catch {
+    return null;
+  }
+}
 
 export async function updateSettings(formData: FormData) {
-  const supabase = await createClient();
   const villageName = formData.get("village_name") as string;
-
-  const { error } = await supabase
-    .from("settings")
-    .update({ village_name: villageName })
-    .eq("id", 1);
-
-  if (error) throw new Error("Impossible de sauvegarder les paramètres.");
-
+  await api.patch("/communes/me", { name: villageName });
   revalidatePath("/settings");
 }

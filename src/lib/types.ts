@@ -44,7 +44,9 @@ export type Service = {
   hours: string | null;
 };
 
+// id supprimé : c'était l'ancien identifiant Supabase de la ligne unique
+// "settings" (toujours 1), sans équivalent côté civic_api (Commune.id est
+// un UUID, non exposé ici puisque non utilisé par le formulaire).
 export type CitySettings = {
-  id: number;
   village_name: string;
 };
