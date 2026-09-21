@@ -50,3 +50,12 @@ export type Service = {
 export type CitySettings = {
   village_name: string;
 };
+
+export type Commune = {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: string;
+};
+
+export type StaffRole = "AGENT" | "ADMINISTRATEUR" | "SUPER_ADMIN";

@@ -10,9 +10,11 @@ import {
   Wrench,
   Settings,
   LogOut,
+  Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/actions/auth";
+import type { CurrentStaff } from "@/lib/session";
 
 const navItems = [
   { href: "/", label: "Tableau de bord", icon: LayoutDashboard },
@@ -23,18 +25,28 @@ const navItems = [
   { href: "/settings", label: "Paramètres", icon: Settings },
 ];
 
-export function Sidebar() {
+const superAdminNavItem = {
+  href: "/superadmin",
+  label: "Communes",
+  icon: Building2,
+};
+
+export function Sidebar({ staff }: { staff: CurrentStaff }) {
   const pathname = usePathname();
+  const items =
+    staff.role === "SUPER_ADMIN" ? [...navItems, superAdminNavItem] : navItems;
 
   return (
     <aside className="w-64 flex-shrink-0 bg-gray-900 text-white flex flex-col min-h-screen">
       <div className="px-6 py-5 border-b border-gray-800">
         <span className="text-xl font-bold tracking-tight">City-Co</span>
-        <p className="text-xs text-gray-400 mt-0.5">Admin</p>
+        <p className="text-xs text-gray-400 mt-0.5">
+          {staff.commune ? staff.commune.name : "Super administrateur"}
+        </p>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {items.map(({ href, label, icon: Icon }) => {
           const active =
             href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
