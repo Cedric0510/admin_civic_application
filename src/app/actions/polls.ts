@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { api } from "@/lib/api/client";
+import { api, ApiError } from "@/lib/api/client";
 import { getCurrentStaff } from "@/lib/session";
 import type { Poll } from "@/lib/types";
 
@@ -15,8 +15,13 @@ export async function getPolls(): Promise<Poll[]> {
 export async function getPoll(id: string): Promise<Poll | null> {
   try {
     return await api.get<Poll>(`/polls/${id}`);
-  } catch {
-    return null;
+  } catch (error) {
+    // 400 inclus : un id mal formé dans l'URL n'est pas plus "trouvable"
+    // qu'un id inexistant, du point de vue de l'utilisateur du dashboard.
+    if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
+      return null;
+    }
+    throw error;
   }
 }
 

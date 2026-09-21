@@ -1,6 +1,7 @@
 "use client";
 
 import { createArticle, updateArticle } from "@/app/actions/articles";
+import { uploadImage } from "@/app/actions/uploads";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,15 @@ export function ArticleForm({ article }: { article?: Article }) {
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
       try {
+        const imageFile = formData.get("image_file") as File | null;
+        formData.delete("image_file");
+        // Pas de nouveau fichier choisi : on ne fixe pas image_url du tout —
+        // civic_api (PATCH) laisse alors la valeur existante inchangée.
+        if (imageFile && imageFile.size > 0) {
+          const url = await uploadImage(imageFile);
+          formData.set("image_url", url);
+        }
+
         if (article) {
           await updateArticle(article.id, formData);
         } else {
@@ -58,19 +68,25 @@ export function ArticleForm({ article }: { article?: Article }) {
       </div>
 
       <div className="space-y-1">
-        <Label htmlFor="image_url">URL de l&apos;image (optionnel)</Label>
+        <Label htmlFor="image_file">Image (optionnel)</Label>
+        {article?.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element -- aperçu d'une image hébergée par civic_api, pas d'optimisation Next.js nécessaire ici.
+          <img
+            src={article.imageUrl}
+            alt=""
+            className="mb-2 h-24 w-auto rounded-md object-cover"
+          />
+        )}
         <Input
-          id="image_url"
-          name="image_url"
-          type="url"
-          pattern="https?://.*"
-          defaultValue={article?.imageUrl ?? ""}
-          placeholder="https://exemple.com/image.jpg"
-          title="Collez une URL commençant par http:// ou https://"
+          id="image_file"
+          name="image_file"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
         />
         <p className="text-xs text-gray-500">
-          Collez uniquement une URL publique. Les images encodées en base64 ne
-          sont pas acceptées.
+          {article?.imageUrl
+            ? "Laisser vide pour conserver l'image actuelle."
+            : "JPEG, PNG ou WebP, 5 Mo maximum."}
         </p>
       </div>
 

@@ -24,7 +24,11 @@ function extractMessage(body: unknown): string {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
-  headers.set("Content-Type", "application/json");
+  // FormData (upload de fichier) : ne surtout pas fixer Content-Type nous-
+  // mêmes, fetch doit poser le boundary multipart lui-même.
+  if (!(options.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
 
   const token = (await cookies()).get(TOKEN_COOKIE)?.value;
   if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -54,7 +58,12 @@ export const api = {
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, {
       method: "POST",
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body:
+        body instanceof FormData
+          ? body
+          : body !== undefined
+            ? JSON.stringify(body)
+            : undefined,
     }),
   patch: <T>(path: string, body?: unknown) =>
     request<T>(path, {
