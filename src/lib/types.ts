@@ -59,3 +59,10 @@ export type Commune = {
 };
 
 export type StaffRole = "AGENT" | "ADMINISTRATEUR" | "SUPER_ADMIN";
+
+export type StaffMember = {
+  id: string;
+  email: string;
+  role: StaffRole;
+  createdAt: string;
+};

@@ -11,19 +11,22 @@ import {
   Settings,
   LogOut,
   Building2,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/actions/auth";
 import type { CurrentStaff } from "@/lib/session";
 
-const navItems = [
+const baseNavItems = [
   { href: "/", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/articles", label: "Actualités", icon: Newspaper },
   { href: "/appointments", label: "Rendez-vous", icon: CalendarDays },
   { href: "/polls", label: "Sondages", icon: BarChart3 },
   { href: "/services", label: "Services", icon: Wrench },
-  { href: "/settings", label: "Paramètres", icon: Settings },
 ];
+
+const staffNavItem = { href: "/staff", label: "Agents", icon: Users };
+const settingsNavItem = { href: "/settings", label: "Paramètres", icon: Settings };
 
 const superAdminNavItem = {
   href: "/superadmin",
@@ -33,8 +36,13 @@ const superAdminNavItem = {
 
 export function Sidebar({ staff }: { staff: CurrentStaff }) {
   const pathname = usePathname();
-  const items =
-    staff.role === "SUPER_ADMIN" ? [...navItems, superAdminNavItem] : navItems;
+  // Agents/Paramètres : réservés ADMINISTRATEUR/SUPER_ADMIN côté API
+  // (SETTINGS_ROLES) -- un simple AGENT ne doit pas les voir dans le menu.
+  const items = [
+    ...baseNavItems,
+    ...(staff.role !== "AGENT" ? [staffNavItem, settingsNavItem] : []),
+    ...(staff.role === "SUPER_ADMIN" ? [superAdminNavItem] : []),
+  ];
 
   return (
     <aside className="w-64 flex-shrink-0 bg-gray-900 text-white flex flex-col min-h-screen">
