@@ -16,3 +16,13 @@ export async function createStaff(formData: FormData) {
   });
   revalidatePath("/staff");
 }
+
+export async function updateStaffRole(id: string, role: StaffRole) {
+  await api.patch(`/staff/${id}`, { role });
+  revalidatePath("/staff");
+}
+
+export async function deleteStaff(id: string) {
+  await api.delete(`/staff/${id}`);
+  revalidatePath("/staff");
+}
