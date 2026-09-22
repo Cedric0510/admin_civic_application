@@ -10,9 +10,11 @@ function serviceFields(formData: FormData) {
     name: formData.get("name") as string,
     category: (formData.get("category") as string) || undefined,
     description: (formData.get("description") as string) || undefined,
+    email: (formData.get("email") as string) || undefined,
     phone: (formData.get("phone") as string) || undefined,
     address: (formData.get("address") as string) || undefined,
     hours: (formData.get("hours") as string) || undefined,
+    imageUrl: (formData.get("image_url") as string) || undefined,
   };
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { createService, updateService } from "@/app/actions/services";
+import { uploadImage } from "@/app/actions/uploads";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,15 @@ export function ServiceForm({ service }: { service?: Service }) {
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
       try {
+        const imageFile = formData.get("image_file") as File | null;
+        formData.delete("image_file");
+        // Pas de nouveau fichier choisi : on ne fixe pas image_url du tout —
+        // civic_api (PATCH) laisse alors la valeur existante inchangée.
+        if (imageFile && imageFile.size > 0) {
+          const url = await uploadImage(imageFile);
+          formData.set("image_url", url);
+        }
+
         if (service) {
           await updateService(service.id, formData);
         } else {
@@ -24,8 +34,10 @@ export function ServiceForm({ service }: { service?: Service }) {
         }
         toast.success(service ? "Service mis à jour." : "Service créé.");
         router.push("/services");
-      } catch {
-        toast.error("Une erreur est survenue.");
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Une erreur est survenue.",
+        );
       }
     });
   }
@@ -72,7 +84,18 @@ export function ServiceForm({ service }: { service?: Service }) {
             defaultValue={service?.phone ?? ""}
           />
         </div>
+        <div className="space-y-1">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            defaultValue={service?.email ?? ""}
+          />
+        </div>
+      </div>
 
+      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
           <Label htmlFor="hours">Horaires</Label>
           <Input
@@ -82,15 +105,37 @@ export function ServiceForm({ service }: { service?: Service }) {
             placeholder="ex. Lun-Ven 9h-17h"
           />
         </div>
+        <div className="space-y-1">
+          <Label htmlFor="address">Adresse</Label>
+          <Input
+            id="address"
+            name="address"
+            defaultValue={service?.address ?? ""}
+          />
+        </div>
       </div>
 
       <div className="space-y-1">
-        <Label htmlFor="address">Adresse</Label>
+        <Label htmlFor="image_file">Photo (optionnel)</Label>
+        {service?.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element -- aperçu d'une image hébergée par civic_api, pas d'optimisation Next.js nécessaire ici.
+          <img
+            src={service.imageUrl}
+            alt=""
+            className="mb-2 h-24 w-auto rounded-md object-cover"
+          />
+        )}
         <Input
-          id="address"
-          name="address"
-          defaultValue={service?.address ?? ""}
+          id="image_file"
+          name="image_file"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
         />
+        <p className="text-xs text-gray-500">
+          {service?.imageUrl
+            ? "Laisser vide pour conserver l'image actuelle."
+            : "JPEG, PNG ou WebP, 5 Mo maximum."}
+        </p>
       </div>
 
       <div className="flex gap-3 pt-2">

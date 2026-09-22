@@ -68,6 +68,16 @@ export function ArticleForm({ article }: { article?: Article }) {
       </div>
 
       <div className="space-y-1">
+        <Label htmlFor="category">Catégorie</Label>
+        <Input
+          id="category"
+          name="category"
+          defaultValue={article?.category ?? ""}
+          placeholder="ex. Info générale, Travaux, Événement, Alerte…"
+        />
+      </div>
+
+      <div className="space-y-1">
         <Label htmlFor="image_file">Image (optionnel)</Label>
         {article?.imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element -- aperçu d'une image hébergée par civic_api, pas d'optimisation Next.js nécessaire ici.

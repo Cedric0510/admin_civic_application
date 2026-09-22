@@ -48,6 +48,7 @@ export async function createArticle(formData: FormData) {
   await api.post("/articles", {
     title: formData.get("title") as string,
     content: formData.get("content") as string,
+    category: (formData.get("category") as string) || undefined,
     imageUrl,
     // Ignoré côté civic_api pour un agent/administrateur (toujours sa
     // propre commune) ; nécessaire pour un super-admin qui gère une
@@ -62,6 +63,7 @@ export async function updateArticle(id: string, formData: FormData) {
   await api.patch(`/articles/${id}`, {
     title: formData.get("title") as string,
     content: formData.get("content") as string,
+    category: (formData.get("category") as string) || undefined,
     imageUrl,
   });
   revalidatePath("/articles");

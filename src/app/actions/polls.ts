@@ -35,7 +35,19 @@ export async function createPoll(formData: FormData) {
     throw new Error("Un sondage doit avoir au moins 2 options.");
   }
 
-  await api.post("/polls", { question, options, communeId: commune?.id });
+  const opensAtRaw = formData.get("opens_at") as string | null;
+  const closesAtRaw = formData.get("closes_at") as string | null;
+
+  await api.post("/polls", {
+    question,
+    options,
+    // datetime-local n'a pas de fuseau -- interprété en heure locale du
+    // serveur Next.js, cohérent avec le reste du dashboard (pas d'UTC
+    // explicite ailleurs dans ce projet).
+    opensAt: opensAtRaw ? new Date(opensAtRaw).toISOString() : undefined,
+    closesAt: closesAtRaw ? new Date(closesAtRaw).toISOString() : undefined,
+    communeId: commune?.id,
+  });
 
   revalidatePath("/polls");
   redirect("/polls");

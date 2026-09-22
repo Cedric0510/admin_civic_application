@@ -77,6 +77,21 @@ export function NewPollForm() {
         </Button>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <Label htmlFor="opens_at">Ouverture (optionnel)</Label>
+          <Input id="opens_at" name="opens_at" type="datetime-local" />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="closes_at">Clôture (optionnel)</Label>
+          <Input id="closes_at" name="closes_at" type="datetime-local" />
+        </div>
+      </div>
+      <p className="text-xs text-gray-500 -mt-3">
+        Laissez vide pour un sondage ouvert dès sa création et sans date de
+        fin.
+      </p>
+
       <div className="flex gap-3 pt-2">
         <Button type="submit" disabled={pending}>
           {pending ? "Création…" : "Créer le sondage"}

@@ -66,6 +66,7 @@ export function PollsTable({ polls }: { polls: Poll[] }) {
       <TableHeader>
         <TableRow>
           <TableHead>Question</TableHead>
+          <TableHead>Fenêtre</TableHead>
           <TableHead>Votes totaux</TableHead>
           <TableHead>Statut</TableHead>
           <TableHead className="w-28 text-right">Actions</TableHead>
@@ -77,14 +78,37 @@ export function PollsTable({ polls }: { polls: Poll[] }) {
             (sum, o) => sum + o.voteCount,
             0,
           );
+          const formatDate = (value: string) =>
+            new Date(value).toLocaleDateString("fr-FR", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            });
           return (
             <TableRow key={poll.id}>
               <TableCell className="font-medium">{poll.question}</TableCell>
+              <TableCell className="text-xs text-gray-500">
+                {poll.opensAt || poll.closesAt ? (
+                  <>
+                    {poll.opensAt ? formatDate(poll.opensAt) : "—"}
+                    {" → "}
+                    {poll.closesAt ? formatDate(poll.closesAt) : "—"}
+                  </>
+                ) : (
+                  "—"
+                )}
+              </TableCell>
               <TableCell className="text-gray-500">{totalVotes}</TableCell>
               <TableCell>
-                <Badge variant={poll.isActive ? "default" : "secondary"}>
-                  {poll.isActive ? "Actif" : "Inactif"}
-                </Badge>
+                {!poll.isActive ? (
+                  <Badge variant="secondary">Inactif</Badge>
+                ) : poll.isVotable ? (
+                  <Badge variant="default">Actif</Badge>
+                ) : (
+                  <Badge variant="outline">Hors fenêtre</Badge>
+                )}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end items-center gap-2">

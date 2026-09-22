@@ -4,14 +4,21 @@ export type Article = {
   id: string;
   title: string;
   content: string;
+  category: string | null;
   imageUrl: string | null;
   publishedAt: string;
 };
 
+// opensAt/closesAt facultatifs, fixés à la création (pas d'édition en V1) ;
+// isVotable est calculé côté civic_api (isActive + fenêtre de dates), pas
+// stocké -- ne jamais le recalculer côté client.
 export type Poll = {
   id: string;
   question: string;
   isActive: boolean;
+  opensAt: string | null;
+  closesAt: string | null;
+  isVotable: boolean;
   createdAt: string;
   options: PollOption[];
 };
@@ -23,12 +30,15 @@ export type PollOption = {
   voteCount: number;
 };
 
+export type AppointmentStatus = "DEMANDE" | "CONFIRME" | "ANNULE";
+
 // citizen/service en relations imbriquées (GET /appointments côté staff) :
 // plus de name/email en texte libre, ni de service en chaîne.
 export type Appointment = {
   id: string;
   date: string;
   message: string | null;
+  status: AppointmentStatus;
   createdAt: string;
   citizen: { email: string };
   service: { name: string };
@@ -39,9 +49,11 @@ export type Service = {
   name: string;
   category: string | null;
   description: string | null;
+  email: string | null;
   phone: string | null;
   address: string | null;
   hours: string | null;
+  imageUrl: string | null;
 };
 
 // id supprimé : c'était l'ancien identifiant Supabase de la ligne unique

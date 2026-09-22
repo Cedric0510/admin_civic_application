@@ -2,6 +2,7 @@
 
 import { deleteArticle } from "@/app/actions/articles";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -27,7 +28,7 @@ import type { Article } from "@/lib/types";
 export function ArticlesTable({
   articles,
 }: {
-  articles: Pick<Article, "id" | "title" | "publishedAt">[];
+  articles: Pick<Article, "id" | "title" | "category" | "publishedAt">[];
 }) {
   const [pending, startTransition] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -57,6 +58,7 @@ export function ArticlesTable({
       <TableHeader>
         <TableRow>
           <TableHead>Titre</TableHead>
+          <TableHead>Catégorie</TableHead>
           <TableHead>Date de publication</TableHead>
           <TableHead className="w-24 text-right">Actions</TableHead>
         </TableRow>
@@ -65,6 +67,13 @@ export function ArticlesTable({
         {articles.map((article) => (
           <TableRow key={article.id}>
             <TableCell className="font-medium">{article.title}</TableCell>
+            <TableCell>
+              {article.category ? (
+                <Badge variant="outline">{article.category}</Badge>
+              ) : (
+                <span className="text-gray-400 text-sm">—</span>
+              )}
+            </TableCell>
             <TableCell className="text-gray-500 text-sm">
               {new Date(article.publishedAt).toLocaleDateString("fr-FR", {
                 day: "2-digit",

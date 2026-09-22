@@ -1,6 +1,9 @@
 "use client";
 
-import { deleteAppointment } from "@/app/actions/appointments";
+import {
+  deleteAppointment,
+  updateAppointmentStatus,
+} from "@/app/actions/appointments";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -23,7 +26,24 @@ import { Trash2 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import type { Appointment } from "@/lib/types";
+import type { Appointment, AppointmentStatus } from "@/lib/types";
+
+const statusLabels: Record<AppointmentStatus, string> = {
+  DEMANDE: "Demandé",
+  CONFIRME: "Confirmé",
+  ANNULE: "Annulé",
+};
+
+const statusBadgeVariant: Record<
+  AppointmentStatus,
+  "secondary" | "default" | "destructive"
+> = {
+  DEMANDE: "secondary",
+  CONFIRME: "default",
+  ANNULE: "destructive",
+};
+
+const statusOptions: AppointmentStatus[] = ["DEMANDE", "CONFIRME", "ANNULE"];
 
 type Props = {
   appointments: Appointment[];
@@ -63,6 +83,17 @@ export function AppointmentsTable({
         toast.success("Rendez-vous supprimé.");
       } catch {
         toast.error("Erreur lors de la suppression.");
+      }
+    });
+  }
+
+  function handleStatusChange(id: string, status: AppointmentStatus) {
+    startTransition(async () => {
+      try {
+        await updateAppointmentStatus(id, status);
+        toast.success("Statut mis à jour.");
+      } catch {
+        toast.error("Erreur lors de la modification.");
       }
     });
   }
@@ -109,6 +140,7 @@ export function AppointmentsTable({
               <TableHead>Service</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Message</TableHead>
+              <TableHead>Statut</TableHead>
               <TableHead className="w-16 text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -130,6 +162,30 @@ export function AppointmentsTable({
                 </TableCell>
                 <TableCell className="text-sm text-gray-500 max-w-xs truncate">
                   {appt.message ?? "—"}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={statusBadgeVariant[appt.status]}>
+                      {statusLabels[appt.status]}
+                    </Badge>
+                    <select
+                      value={appt.status}
+                      disabled={pending}
+                      onChange={(e) =>
+                        handleStatusChange(
+                          appt.id,
+                          e.target.value as AppointmentStatus,
+                        )
+                      }
+                      className="h-8 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                    >
+                      {statusOptions.map((status) => (
+                        <option key={status} value={status}>
+                          {statusLabels[status]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <Dialog
