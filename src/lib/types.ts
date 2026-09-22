@@ -66,3 +66,18 @@ export type StaffMember = {
   role: StaffRole;
   createdAt: string;
 };
+
+// notes : annonce publique tenue à jour par le commerçant/la mairie (congés,
+// promotion du moment...) -- cf. docs/ROADMAP.md Décision 6.
+export type Commerce = {
+  id: string;
+  name: string;
+  category: string | null;
+  description: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  hours: string | null;
+  imageUrl: string | null;
+  notes: string | null;
+};

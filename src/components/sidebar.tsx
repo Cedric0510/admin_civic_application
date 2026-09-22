@@ -8,6 +8,7 @@ import {
   CalendarDays,
   BarChart3,
   Wrench,
+  Store,
   Settings,
   LogOut,
   Building2,
@@ -24,6 +25,7 @@ const baseNavItems = [
   { href: "/appointments", label: "Rendez-vous", icon: CalendarDays },
   { href: "/polls", label: "Sondages", icon: BarChart3 },
   { href: "/services", label: "Services", icon: Wrench },
+  { href: "/commerces", label: "Commerçants", icon: Store },
 ];
 
 const staffNavItem = { href: "/staff", label: "Agents", icon: Users };
