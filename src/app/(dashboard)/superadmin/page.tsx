@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -8,8 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus } from "lucide-react";
-import { getCommunes } from "@/app/actions/superadmin";
+import { LogIn, Plus } from "lucide-react";
+import { getCommunes, manageCommune } from "@/app/actions/superadmin";
 
 export default async function SuperAdminPage() {
   const communes = await getCommunes();
@@ -42,6 +42,7 @@ export default async function SuperAdminPage() {
                 <TableHead>Nom</TableHead>
                 <TableHead>Identifiant (slug)</TableHead>
                 <TableHead>Créée le</TableHead>
+                <TableHead className="w-40 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -53,6 +54,15 @@ export default async function SuperAdminPage() {
                   </TableCell>
                   <TableCell className="text-sm text-gray-500">
                     {new Date(commune.createdAt).toLocaleDateString("fr-FR")}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <form action={manageCommune}>
+                      <input type="hidden" name="slug" value={commune.slug} />
+                      <Button type="submit" variant="outline" size="sm">
+                        <LogIn size={14} />
+                        Gérer
+                      </Button>
+                    </form>
                   </TableCell>
                 </TableRow>
               ))}

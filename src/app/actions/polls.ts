@@ -3,13 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { api, ApiError } from "@/lib/api/client";
-import { getCurrentStaff } from "@/lib/session";
+import { getManagedCommune } from "@/lib/session";
 import type { Poll } from "@/lib/types";
 
 export async function getPolls(): Promise<Poll[]> {
-  const staff = await getCurrentStaff();
-  if (!staff?.commune) return [];
-  return api.get<Poll[]>(`/polls/manage?communeSlug=${staff.commune.slug}`);
+  const commune = await getManagedCommune();
+  if (!commune) return [];
+  return api.get<Poll[]>(`/polls/manage?communeSlug=${commune.slug}`);
 }
 
 export async function getPoll(id: string): Promise<Poll | null> {
@@ -26,6 +26,7 @@ export async function getPoll(id: string): Promise<Poll | null> {
 }
 
 export async function createPoll(formData: FormData) {
+  const commune = await getManagedCommune();
   const question = formData.get("question") as string;
   const optionsRaw = formData.getAll("option") as string[];
   const options = optionsRaw.filter((o) => o.trim().length > 0);
@@ -34,7 +35,7 @@ export async function createPoll(formData: FormData) {
     throw new Error("Un sondage doit avoir au moins 2 options.");
   }
 
-  await api.post("/polls", { question, options });
+  await api.post("/polls", { question, options, communeId: commune?.id });
 
   revalidatePath("/polls");
   redirect("/polls");

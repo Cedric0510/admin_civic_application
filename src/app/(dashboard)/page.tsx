@@ -1,6 +1,8 @@
-import { Newspaper, CalendarDays, BarChart3, Users } from "lucide-react";
+import Link from "next/link";
+import { Newspaper, CalendarDays, BarChart3, Users, Building2 } from "lucide-react";
 import { api } from "@/lib/api/client";
-import { getCurrentStaff } from "@/lib/session";
+import { getCurrentStaff, getManagedCommune } from "@/lib/session";
+import { buttonVariants } from "@/components/ui/button";
 
 type CommuneStats = {
   articles: number;
@@ -9,13 +11,9 @@ type CommuneStats = {
   citizens: number;
 };
 
-async function getStats(): Promise<CommuneStats> {
-  const staff = await getCurrentStaff();
-  if (!staff?.commune) {
-    return { articles: 0, appointments: 0, activePolls: 0, citizens: 0 };
-  }
+async function getStats(communeId: string): Promise<CommuneStats> {
   try {
-    return await api.get<CommuneStats>("/communes/me/stats");
+    return await api.get<CommuneStats>(`/communes/me/stats?communeId=${communeId}`);
   } catch {
     // Réservé à ADMINISTRATEUR/SUPER_ADMIN côté civic_api : un agent
     // connecté verra un tableau de bord à zéro plutôt qu'une erreur.
@@ -55,7 +53,31 @@ const statCards = [
 ];
 
 export default async function DashboardPage() {
-  const stats = await getStats();
+  const staff = await getCurrentStaff();
+  const commune = await getManagedCommune(staff);
+
+  if (!commune) {
+    // Super-admin connecté mais n'ayant encore choisi aucune commune à
+    // gérer -- pas de dashboard vide/confus, un renvoi direct vers le
+    // sélecteur.
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
+        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center space-y-4">
+          <Building2 size={32} className="mx-auto text-gray-400" />
+          <p className="text-gray-600">
+            Vous êtes connecté en tant que super-administrateur. Choisissez
+            une commune à gérer pour accéder à son tableau de bord.
+          </p>
+          <Link href="/superadmin" className={buttonVariants()}>
+            Voir les communes
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = await getStats(commune.id);
 
   return (
     <div className="space-y-6">

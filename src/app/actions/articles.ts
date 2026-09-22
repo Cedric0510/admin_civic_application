@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { api, ApiError } from "@/lib/api/client";
-import { getCurrentStaff } from "@/lib/session";
+import { getManagedCommune } from "@/lib/session";
 import type { Article } from "@/lib/types";
 
 function getImageUrl(formData: FormData): string | undefined {
@@ -24,13 +24,9 @@ function getImageUrl(formData: FormData): string | undefined {
 }
 
 export async function getArticles(): Promise<Article[]> {
-  const staff = await getCurrentStaff();
-  if (!staff?.commune) {
-    // Super-admin sans commune : pas encore géré par ce dashboard
-    // (cf. docs/ROADMAP.md — Dashboard SuperAdmin, à venir).
-    return [];
-  }
-  return api.get<Article[]>(`/articles?communeSlug=${staff.commune.slug}`);
+  const commune = await getManagedCommune();
+  if (!commune) return [];
+  return api.get<Article[]>(`/articles?communeSlug=${commune.slug}`);
 }
 
 export async function getArticle(id: string): Promise<Article | null> {
@@ -47,11 +43,16 @@ export async function getArticle(id: string): Promise<Article | null> {
 }
 
 export async function createArticle(formData: FormData) {
+  const commune = await getManagedCommune();
   const imageUrl = getImageUrl(formData);
   await api.post("/articles", {
     title: formData.get("title") as string,
     content: formData.get("content") as string,
     imageUrl,
+    // Ignoré côté civic_api pour un agent/administrateur (toujours sa
+    // propre commune) ; nécessaire pour un super-admin qui gère une
+    // commune choisie via /superadmin.
+    communeId: commune?.id,
   });
   revalidatePath("/articles");
 }

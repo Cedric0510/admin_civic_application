@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { api, ApiError, TOKEN_COOKIE } from "@/lib/api/client";
+import { MANAGED_COMMUNE_COOKIE } from "@/lib/api/constants";
 
 type LoginResponse = { accessToken: string };
 
@@ -34,6 +35,8 @@ export async function login(formData: FormData) {
 }
 
 export async function logout() {
-  (await cookies()).delete(TOKEN_COOKIE);
+  const cookieStore = await cookies();
+  cookieStore.delete(TOKEN_COOKIE);
+  cookieStore.delete(MANAGED_COMMUNE_COOKIE);
   redirect("/login");
 }

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { api, ApiError } from "@/lib/api/client";
-import { getCurrentStaff } from "@/lib/session";
+import { getManagedCommune } from "@/lib/session";
 import type { Service } from "@/lib/types";
 
 function serviceFields(formData: FormData) {
@@ -17,9 +17,9 @@ function serviceFields(formData: FormData) {
 }
 
 export async function getServices(): Promise<Service[]> {
-  const staff = await getCurrentStaff();
-  if (!staff?.commune) return [];
-  return api.get<Service[]>(`/services?communeSlug=${staff.commune.slug}`);
+  const commune = await getManagedCommune();
+  if (!commune) return [];
+  return api.get<Service[]>(`/services?communeSlug=${commune.slug}`);
 }
 
 export async function getService(id: string): Promise<Service | null> {
@@ -34,7 +34,11 @@ export async function getService(id: string): Promise<Service | null> {
 }
 
 export async function createService(formData: FormData) {
-  await api.post("/services", serviceFields(formData));
+  const commune = await getManagedCommune();
+  await api.post("/services", {
+    ...serviceFields(formData),
+    communeId: commune?.id,
+  });
   revalidatePath("/services");
 }
 

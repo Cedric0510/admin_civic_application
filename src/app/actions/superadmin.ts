@@ -1,7 +1,10 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { api, ApiError } from "@/lib/api/client";
+import { MANAGED_COMMUNE_COOKIE } from "@/lib/api/constants";
 import type { Commune } from "@/lib/types";
 
 export async function getCommunes(): Promise<Commune[]> {
@@ -38,4 +41,26 @@ export async function provisionCommune(formData: FormData) {
   }
 
   revalidatePath("/superadmin");
+}
+
+// Un super-admin "entre" dans une commune pour la gérer comme s'il en était
+// administrateur -- pas de compte séparé à créer/retenir, civic_api
+// autorise déjà un SUPER_ADMIN à agir sur n'importe quelle commune, il ne
+// manquait qu'un moyen côté dashboard de dire laquelle. Le cookie est ce
+// que getManagedCommune() (session.ts) lit ensuite sur chaque page.
+export async function manageCommune(formData: FormData) {
+  const slug = formData.get("slug") as string;
+  (await cookies()).set(MANAGED_COMMUNE_COOKIE, slug, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 2,
+  });
+  redirect("/");
+}
+
+export async function stopManagingCommune() {
+  (await cookies()).delete(MANAGED_COMMUNE_COOKIE);
+  redirect("/superadmin");
 }

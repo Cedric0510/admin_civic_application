@@ -2,17 +2,25 @@
 
 import { revalidatePath } from "next/cache";
 import { api } from "@/lib/api/client";
+import { getManagedCommune } from "@/lib/session";
 import type { StaffMember, StaffRole } from "@/lib/types";
 
 export async function getStaff(): Promise<StaffMember[]> {
-  return api.get<StaffMember[]>("/staff");
+  const commune = await getManagedCommune();
+  // Sans commune gérée (super-admin qui n'a encore rien choisi), civic_api
+  // renvoie tout le staff toutes communes confondues -- pas le bon défaut
+  // pour cette page, qui affiche "les agents de la commune en cours".
+  if (!commune) return [];
+  return api.get<StaffMember[]>(`/staff?communeId=${commune.id}`);
 }
 
 export async function createStaff(formData: FormData) {
+  const commune = await getManagedCommune();
   await api.post("/staff", {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
     role: formData.get("role") as StaffRole,
+    communeId: commune?.id,
   });
   revalidatePath("/staff");
 }
