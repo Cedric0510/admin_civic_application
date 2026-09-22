@@ -81,3 +81,26 @@ export type Commerce = {
   imageUrl: string | null;
   notes: string | null;
 };
+
+// Signalements citoyens, version simplifiée de la bêta (cf. docs/ROADMAP.md
+// Décision 6) : pas de carte, pas de priorité/affectation. createdAt fait
+// office d'horodatage du signalement.
+export type ReportCategory =
+  | "VOIRIE"
+  | "ECLAIRAGE"
+  | "PROPRETE"
+  | "ESPACES_VERTS"
+  | "AUTRE";
+
+export type ReportStatus = "NOUVEAU" | "EN_COURS" | "TRAITE";
+
+export type Report = {
+  id: string;
+  address: string;
+  category: ReportCategory;
+  description: string;
+  imageUrl: string | null;
+  status: ReportStatus;
+  createdAt: string;
+  citizen: { email: string };
+};

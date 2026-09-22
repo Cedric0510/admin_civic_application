@@ -9,6 +9,7 @@ import {
   BarChart3,
   Wrench,
   Store,
+  AlertTriangle,
   Settings,
   LogOut,
   Building2,
@@ -26,6 +27,7 @@ const baseNavItems = [
   { href: "/polls", label: "Sondages", icon: BarChart3 },
   { href: "/services", label: "Services", icon: Wrench },
   { href: "/commerces", label: "Commerçants", icon: Store },
+  { href: "/reports", label: "Signalements", icon: AlertTriangle },
 ];
 
 const staffNavItem = { href: "/staff", label: "Agents", icon: Users };
