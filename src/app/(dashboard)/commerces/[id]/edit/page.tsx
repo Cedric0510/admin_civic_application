@@ -23,7 +23,7 @@ export default async function EditCommercePage({
       </h1>
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
         <CommerceForm commerce={commerce} />
-        <CommerceManagerSection commerceId={id} initialManager={manager} />
+        <CommerceManagerSection commerceId={id} manager={manager} />
       </div>
     </div>
   );

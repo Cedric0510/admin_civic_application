@@ -80,7 +80,7 @@ export type StaffMember = {
 };
 
 // notes : annonce publique tenue à jour par le commerçant/la mairie (congés,
-// promotion du moment...) -- cf. docs/ROADMAP.md Décision 6.
+// promotion du moment...).
 export type Commerce = {
   id: string;
   name: string;
@@ -94,9 +94,8 @@ export type Commerce = {
   notes: string | null;
 };
 
-// Signalements citoyens, version simplifiée de la bêta (cf. docs/ROADMAP.md
-// Décision 6) : pas de carte, pas de priorité/affectation. createdAt fait
-// office d'horodatage du signalement.
+// Signalements citoyens, version simplifiée : pas de carte, pas de
+// priorité/affectation. createdAt fait office d'horodatage du signalement.
 export type ReportCategory =
   | "VOIRIE"
   | "ECLAIRAGE"

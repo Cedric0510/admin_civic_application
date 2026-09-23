@@ -22,15 +22,14 @@ import { toast } from "sonner";
 // Le commerçant assigné gère sa propre fiche en autonomie depuis l'appli
 // mobile (horaires, photos, notes...) -- le staff garde un droit de
 // modération sur le formulaire ci-dessus et peut réassigner/retirer le
-// commerçant ici à tout moment. Cf. docs/ROADMAP.md.
+// commerçant ici à tout moment.
 export function CommerceManagerSection({
   commerceId,
-  initialManager,
+  manager,
 }: {
   commerceId: string;
-  initialManager: { email: string } | null;
+  manager: { email: string } | null;
 }) {
-  const [manager, setManager] = useState(initialManager);
   const [email, setEmail] = useState("");
   const [confirmingRemoval, setConfirmingRemoval] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -40,7 +39,6 @@ export function CommerceManagerSection({
     startTransition(async () => {
       try {
         await assignCommerceManager(commerceId, email.trim());
-        setManager({ email: email.trim() });
         setEmail("");
         toast.success("Commerçant associé.");
       } catch (error) {
@@ -56,7 +54,6 @@ export function CommerceManagerSection({
     startTransition(async () => {
       try {
         await unassignCommerceManager(commerceId);
-        setManager(null);
         toast.success("Commerçant retiré.");
       } catch (error) {
         toast.error(
