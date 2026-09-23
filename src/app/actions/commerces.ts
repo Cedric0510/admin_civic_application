@@ -54,3 +54,19 @@ export async function deleteCommerce(id: string) {
   await api.delete(`/commerces/${id}`);
   revalidatePath("/commerces");
 }
+
+export async function getCommerceManager(
+  id: string,
+): Promise<{ email: string } | null> {
+  return api.get<{ email: string } | null>(`/commerces/${id}/manager`);
+}
+
+export async function assignCommerceManager(id: string, citizenEmail: string) {
+  await api.post(`/commerces/${id}/manager`, { citizenEmail });
+  revalidatePath(`/commerces/${id}/edit`);
+}
+
+export async function unassignCommerceManager(id: string) {
+  await api.delete(`/commerces/${id}/manager`);
+  revalidatePath(`/commerces/${id}/edit`);
+}
