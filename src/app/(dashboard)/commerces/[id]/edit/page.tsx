@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getCommerce, getCommerceManager } from "@/app/actions/commerces";
+import { getCommerce, getCommerceManagers } from "@/app/actions/commerces";
 import { CommerceForm } from "../../commerce-form";
 import { CommerceManagerSection } from "../../commerce-manager-section";
 
@@ -9,9 +9,9 @@ export default async function EditCommercePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [commerce, manager] = await Promise.all([
+  const [commerce, managers] = await Promise.all([
     getCommerce(id),
-    getCommerceManager(id),
+    getCommerceManagers(id),
   ]);
 
   if (!commerce) notFound();
@@ -23,7 +23,7 @@ export default async function EditCommercePage({
       </h1>
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
         <CommerceForm commerce={commerce} />
-        <CommerceManagerSection commerceId={id} manager={manager} />
+        <CommerceManagerSection commerceId={id} managers={managers} />
       </div>
     </div>
   );

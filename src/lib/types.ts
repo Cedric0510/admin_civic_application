@@ -136,6 +136,8 @@ export type Commerce = {
   notes: string | null;
 };
 
+export type CommerceManager = { id: string; email: string };
+
 // Signalements citoyens, version simplifiée : pas de carte, pas de
 // priorité/affectation. createdAt fait office d'horodatage du signalement.
 export type ReportCategory =

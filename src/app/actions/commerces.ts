@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { api, ApiError } from "@/lib/api/client";
 import { getManagedCommune } from "@/lib/session";
-import type { Commerce } from "@/lib/types";
+import type { Commerce, CommerceManager } from "@/lib/types";
 
 function commerceFields(formData: FormData) {
   return {
@@ -55,18 +55,18 @@ export async function deleteCommerce(id: string) {
   revalidatePath("/commerces");
 }
 
-export async function getCommerceManager(
+export async function getCommerceManagers(
   id: string,
-): Promise<{ email: string } | null> {
-  return api.get<{ email: string } | null>(`/commerces/${id}/manager`);
+): Promise<CommerceManager[]> {
+  return api.get<CommerceManager[]>(`/commerces/${id}/managers`);
 }
 
 export async function assignCommerceManager(id: string, citizenEmail: string) {
-  await api.post(`/commerces/${id}/manager`, { citizenEmail });
+  await api.post(`/commerces/${id}/managers`, { citizenEmail });
   revalidatePath(`/commerces/${id}/edit`);
 }
 
-export async function unassignCommerceManager(id: string) {
-  await api.delete(`/commerces/${id}/manager`);
+export async function unassignCommerceManager(id: string, citizenId: string) {
+  await api.delete(`/commerces/${id}/managers/${citizenId}`);
   revalidatePath(`/commerces/${id}/edit`);
 }
