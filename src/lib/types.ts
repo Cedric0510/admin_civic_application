@@ -149,6 +149,17 @@ export type Commerce = {
 
 export type CommerceManager = { id: string; email: string };
 
+export type CommerceInvitation = {
+  id: string;
+  email: string;
+  sentAt: string;
+  expiresAt: string;
+};
+
+export type AddManagerResult =
+  | { status: "linked"; manager: CommerceManager }
+  | { status: "invited"; invitation: CommerceInvitation };
+
 // Signalements citoyens, version simplifiée : pas de carte, pas de
 // priorité/affectation. createdAt fait office d'horodatage du signalement.
 export type ReportCategory =

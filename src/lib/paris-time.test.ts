@@ -3,6 +3,7 @@ import {
   addDays,
   formatDayMonth,
   formatLongDate,
+  formatShortDate,
   formatTime,
   isValidDate,
   mondayOf,
@@ -25,6 +26,11 @@ describe("paris-time", () => {
   it("writes the long date in French, following the Paris day", () => {
     expect(formatLongDate("2026-09-24T12:00:00.000Z")).toBe("jeudi 24 septembre");
     expect(formatLongDate("2026-09-24T22:30:00.000Z")).toBe("vendredi 25 septembre");
+  });
+
+  it("writes the short date with the Paris day", () => {
+    expect(formatShortDate("2026-09-24T12:00:00.000Z")).toBe("24/09/2026");
+    expect(formatShortDate("2026-09-24T22:30:00.000Z")).toBe("25/09/2026");
   });
 
   it("formats a time in Paris time", () => {

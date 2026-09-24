@@ -66,6 +66,15 @@ export function formatLongDate(instant: string | Date): string {
   });
 }
 
+export function formatShortDate(instant: string | Date): string {
+  return new Date(instant).toLocaleDateString("fr-FR", {
+    timeZone: TIME_ZONE,
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export function formatTime(instant: string | Date): string {
   return new Date(instant).toLocaleTimeString("fr-FR", {
     timeZone: TIME_ZONE,

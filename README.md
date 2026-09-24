@@ -31,6 +31,10 @@ Tests : `npm test` ; contrôle du code : `npm run lint` ; build de production : 
 
 La page de connexion propose « Mot de passe oublié ? » : l'agent saisit son adresse e-mail et reçoit, à l'adresse enregistrée dans le logiciel, un lien valable 1 heure et à usage unique vers `/reset-password`. La réponse est la même que le compte existe ou non. Après le changement, les sessions ouvertes sont fermées et la personne est renvoyée vers la connexion. En local, les e-mails arrivent dans Mailpit (`http://localhost:8025`, voir le `docker-compose.yml` de civic_api). Les trois pages d'accès (`/login`, `/forgot-password`, `/reset-password`) sont publiques dans `src/proxy.ts`.
 
+## Commerçants d'un commerce
+
+Sur la fiche d'un commerce, « Personnes qui gèrent ce commerce » liste les comptes associés (plusieurs possibles) et permet d'en ajouter par e-mail. Si l'adresse a déjà un compte dans l'appli, la personne est associée aussitôt ; sinon elle reçoit une invitation avec un code à saisir à l'inscription. Les invitations en attente s'affichent sous la liste avec leurs dates, et peuvent être renvoyées ou annulées.
+
 ## Accès et modules d'une commune (super-administrateur)
 
 Depuis « Communes », le lien « Accès et modules » ouvre la page de la commune :

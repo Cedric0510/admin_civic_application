@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { api, ApiError } from "@/lib/api/client";
 import { getManagedCommune } from "@/lib/session";
-import type { Commerce, CommerceManager } from "@/lib/types";
+import type {
+  AddManagerResult,
+  Commerce,
+  CommerceInvitation,
+  CommerceManager,
+} from "@/lib/types";
 
 function commerceFields(formData: FormData) {
   return {
@@ -61,8 +66,28 @@ export async function getCommerceManagers(
   return api.get<CommerceManager[]>(`/commerces/${id}/managers`);
 }
 
-export async function assignCommerceManager(id: string, citizenEmail: string) {
-  await api.post(`/commerces/${id}/managers`, { citizenEmail });
+export async function getCommerceInvitations(
+  id: string,
+): Promise<CommerceInvitation[]> {
+  return api.get<CommerceInvitation[]>(`/commerces/${id}/invitations`);
+}
+
+export async function assignCommerceManager(
+  id: string,
+  email: string,
+): Promise<AddManagerResult> {
+  const result = await api.post<AddManagerResult>(`/commerces/${id}/managers`, {
+    email,
+  });
+  revalidatePath(`/commerces/${id}/edit`);
+  return result;
+}
+
+export async function cancelCommerceInvitation(
+  id: string,
+  invitationId: string,
+) {
+  await api.delete(`/commerces/${id}/invitations/${invitationId}`);
   revalidatePath(`/commerces/${id}/edit`);
 }
 

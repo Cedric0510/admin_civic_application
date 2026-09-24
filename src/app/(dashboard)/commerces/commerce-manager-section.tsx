@@ -2,6 +2,7 @@
 
 import {
   assignCommerceManager,
+  cancelCommerceInvitation,
   unassignCommerceManager,
 } from "@/app/actions/commerces";
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { CommerceManager } from "@/lib/types";
-import { UserRound, X } from "lucide-react";
+import { formatShortDate } from "@/lib/paris-time";
+import type {
+  AddManagerResult,
+  CommerceInvitation,
+  CommerceManager,
+} from "@/lib/types";
+import { Mail, UserRound, X } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -24,12 +30,23 @@ import { toast } from "sonner";
 // (horaires, photos, notes...) -- le staff garde un droit de modération sur
 // le formulaire ci-dessus et peut ajouter ou retirer des personnes ici à
 // tout moment.
+function outcomeMessage(result: AddManagerResult, resent: boolean): string {
+  if (result.status === "linked") {
+    return "Cette personne a déjà un compte : elle est associée au commerce.";
+  }
+  return resent
+    ? `Invitation renvoyée à ${result.invitation.email}.`
+    : `Invitation envoyée à ${result.invitation.email}.`;
+}
+
 export function CommerceManagerSection({
   commerceId,
   managers,
+  invitations,
 }: {
   commerceId: string;
   managers: CommerceManager[];
+  invitations: CommerceInvitation[];
 }) {
   const [email, setEmail] = useState("");
   const [toRemove, setToRemove] = useState<CommerceManager | null>(null);
@@ -45,9 +62,31 @@ export function CommerceManagerSection({
     if (!email.trim()) return;
     startTransition(async () => {
       try {
-        await assignCommerceManager(commerceId, email.trim());
+        const result = await assignCommerceManager(commerceId, email.trim());
         setEmail("");
-        toast.success("Personne associée au commerce.");
+        toast.success(outcomeMessage(result, false));
+      } catch (error) {
+        fail(error);
+      }
+    });
+  }
+
+  function handleResend(invitation: CommerceInvitation) {
+    startTransition(async () => {
+      try {
+        const result = await assignCommerceManager(commerceId, invitation.email);
+        toast.success(outcomeMessage(result, true));
+      } catch (error) {
+        fail(error);
+      }
+    });
+  }
+
+  function handleCancelInvitation(invitation: CommerceInvitation) {
+    startTransition(async () => {
+      try {
+        await cancelCommerceInvitation(commerceId, invitation.id);
+        toast.success("Invitation annulée.");
       } catch (error) {
         fail(error);
       }
@@ -73,16 +112,17 @@ export function CommerceManagerSection({
       <div className="space-y-1">
         <Label>Personnes qui gèrent ce commerce</Label>
         <p className="text-xs text-gray-500">
-          Chaque compte associé peut modifier lui-même cette fiche (horaires,
-          photos, notes...) depuis l&apos;appli. La personne doit d&apos;abord
-          avoir créé son compte dans l&apos;appli. Le staff garde toujours la
-          main pour modérer.
+          Chaque personne associée peut modifier elle-même cette fiche
+          (horaires, photos, notes...) depuis l&apos;appli. Si elle a déjà un
+          compte, elle est associée tout de suite ; sinon elle reçoit par
+          e-mail une invitation pour créer son compte. Le staff garde toujours
+          la main pour modérer.
         </p>
       </div>
 
       {managers.length === 0 ? (
         <p className="text-sm text-gray-500">
-          Aucun compte associé pour l&apos;instant.
+          Aucune personne associée pour l&apos;instant.
         </p>
       ) : (
         <ul className="space-y-2">
@@ -110,11 +150,60 @@ export function CommerceManagerSection({
         </ul>
       )}
 
+      {invitations.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-gray-700">
+            Invitations en attente
+          </p>
+          <ul className="space-y-2">
+            {invitations.map((invitation) => (
+              <li
+                key={invitation.id}
+                className="flex items-center justify-between gap-3 rounded-md border border-dashed border-gray-300 px-3 py-2"
+              >
+                <span className="min-w-0 space-y-0.5">
+                  <span className="flex items-center gap-2 text-sm text-gray-700">
+                    <Mail size={16} className="shrink-0 text-gray-400" />
+                    <span className="truncate">{invitation.email}</span>
+                  </span>
+                  <span className="block pl-6 text-xs text-gray-500">
+                    Envoyée le {formatShortDate(invitation.sentAt)}, valable
+                    jusqu&apos;au {formatShortDate(invitation.expiresAt)}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    aria-label={`Renvoyer l'invitation à ${invitation.email}`}
+                    disabled={pending}
+                    onClick={() => handleResend(invitation)}
+                  >
+                    Renvoyer
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Annuler l'invitation de ${invitation.email}`}
+                    disabled={pending}
+                    onClick={() => handleCancelInvitation(invitation)}
+                  >
+                    <X size={16} className="text-red-500" />
+                  </Button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="flex gap-2">
         <Input
           type="email"
-          placeholder="e-mail du compte à ajouter"
-          aria-label="E-mail du compte à ajouter"
+          placeholder="e-mail de la personne à ajouter"
+          aria-label="E-mail de la personne à ajouter"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
