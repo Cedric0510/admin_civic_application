@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { api, ApiError } from "@/lib/api/client";
 import { getManagedCommune } from "@/lib/session";
-import type { Service } from "@/lib/types";
+import type { Service, ServiceAgent } from "@/lib/types";
 
 function serviceFields(formData: FormData) {
   return {
+    appointmentDurationMinutes:
+      Number(formData.get("appointment_duration")) || undefined,
     name: formData.get("name") as string,
     category: (formData.get("category") as string) || undefined,
     description: (formData.get("description") as string) || undefined,
@@ -33,6 +35,15 @@ export async function getService(id: string): Promise<Service | null> {
     }
     throw error;
   }
+}
+
+export async function getServiceAgents(id: string): Promise<ServiceAgent[]> {
+  return api.get<ServiceAgent[]>(`/services/${id}/agents`);
+}
+
+export async function setServiceAgents(id: string, staffMemberIds: string[]) {
+  await api.put(`/services/${id}/agents`, { staffMemberIds });
+  revalidatePath(`/services/${id}/edit`);
 }
 
 export async function createService(formData: FormData) {

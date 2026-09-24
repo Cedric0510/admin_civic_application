@@ -1,4 +1,5 @@
 import { getAppointments } from "@/app/actions/appointments";
+import { parisDate } from "@/lib/paris-time";
 import { AppointmentsTable } from "./appointments-table";
 
 export default async function AppointmentsPage({
@@ -11,8 +12,8 @@ export default async function AppointmentsPage({
 
   const appointments = allAppointments
     .filter((a) => !service || a.service.name === service)
-    .filter((a) => !date || a.date.slice(0, 10) === date)
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .filter((a) => !date || parisDate(a.startsAt) === date)
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 
   const services = Array.from(
     new Set(allAppointments.map((a) => a.service.name)),

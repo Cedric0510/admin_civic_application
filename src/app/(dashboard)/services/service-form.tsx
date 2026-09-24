@@ -11,6 +11,8 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import type { Service } from "@/lib/types";
 
+const DURATION_OPTIONS = [15, 20, 30, 60];
+
 export function ServiceForm({ service }: { service?: Service }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -113,6 +115,22 @@ export function ServiceForm({ service }: { service?: Service }) {
             defaultValue={service?.address ?? ""}
           />
         </div>
+      </div>
+
+      <div className="space-y-1">
+        <Label htmlFor="appointment_duration">Durée d&apos;un rendez-vous</Label>
+        <select
+          id="appointment_duration"
+          name="appointment_duration"
+          defaultValue={service?.appointmentDurationMinutes ?? 30}
+          className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        >
+          {DURATION_OPTIONS.map((minutes) => (
+            <option key={minutes} value={minutes}>
+              {minutes} minutes
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-1">

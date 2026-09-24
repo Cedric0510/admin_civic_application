@@ -32,16 +32,19 @@ export type PollOption = {
 
 export type AppointmentStatus = "DEMANDE" | "CONFIRME" | "ANNULE";
 
-// citizen/service en relations imbriquées (GET /appointments côté staff) :
-// plus de name/email en texte libre, ni de service en chaîne.
+// citizen/service/agent en relations imbriquées (GET /appointments côté
+// staff). agent est null pour un rendez-vous antérieur à l'agenda ou dont
+// l'agent a été supprimé.
 export type Appointment = {
   id: string;
-  date: string;
+  startsAt: string;
+  endsAt: string;
   message: string | null;
   status: AppointmentStatus;
   createdAt: string;
   citizen: { email: string };
   service: { name: string };
+  agent: { email: string } | null;
 };
 
 export type Service = {
@@ -54,6 +57,49 @@ export type Service = {
   address: string | null;
   hours: string | null;
   imageUrl: string | null;
+  appointmentDurationMinutes: number;
+};
+
+export type ServiceAgent = {
+  id: string;
+  email: string;
+  role: StaffRole;
+};
+
+export type WorkingHoursRange = {
+  weekday: number;
+  startHour: number;
+  endHour: number;
+};
+
+export type AvailabilityState = "DISPONIBLE" | "INDISPONIBLE";
+export type AvailabilityScope = "WEEK" | "DAY" | "HALF_DAY" | "HOUR";
+export type DayPeriod = "MORNING" | "AFTERNOON";
+
+export type AgendaRule = {
+  date: string;
+  fromHour: number;
+  toHour: number;
+  state: AvailabilityState;
+};
+
+export type AgendaWeek = {
+  staffMemberId: string;
+  weekStart: string;
+  workingHours: WorkingHoursRange[];
+  days: {
+    date: string;
+    hours: { hour: number; available: boolean; overridden: boolean }[];
+  }[];
+  rules: AgendaRule[];
+  appointments: {
+    id: string;
+    startsAt: string;
+    endsAt: string;
+    status: AppointmentStatus;
+    serviceName: string;
+    citizenEmail: string;
+  }[];
 };
 
 // id supprimé : c'était l'ancien identifiant Supabase de la ligne unique

@@ -26,6 +26,7 @@ import { Trash2 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { formatDateTime } from "@/lib/paris-time";
 import type { Appointment, AppointmentStatus } from "@/lib/types";
 
 const statusLabels: Record<AppointmentStatus, string> = {
@@ -139,6 +140,7 @@ export function AppointmentsTable({
               <TableHead>Citoyen</TableHead>
               <TableHead>Service</TableHead>
               <TableHead>Date</TableHead>
+              <TableHead>Agent</TableHead>
               <TableHead>Message</TableHead>
               <TableHead>Statut</TableHead>
               <TableHead className="w-16 text-right">Action</TableHead>
@@ -153,12 +155,11 @@ export function AppointmentsTable({
                 <TableCell>
                   <Badge variant="outline">{appt.service.name}</Badge>
                 </TableCell>
+                <TableCell className="text-sm text-gray-500 capitalize">
+                  {formatDateTime(appt.startsAt)}
+                </TableCell>
                 <TableCell className="text-sm text-gray-500">
-                  {new Date(appt.date).toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
+                  {appt.agent?.email ?? "—"}
                 </TableCell>
                 <TableCell className="text-sm text-gray-500 max-w-xs truncate">
                   {appt.message ?? "—"}
