@@ -239,6 +239,24 @@ describe("summarySentence", () => {
     );
   });
 
+  it("copes with a module that is switched off", () => {
+    expect(summarySentence(appointments(2), undefined)).toBe(
+      "2 rendez-vous attendent une réponse.",
+    );
+    expect(summarySentence(undefined, reports(1))).toBe(
+      "1 signalement attend d'être pris en charge.",
+    );
+    expect(summarySentence(appointments(0), undefined)).toBe(
+      "Tout est à jour : rien n'attend de réponse pour le moment.",
+    );
+  });
+
+  it("stays welcoming when neither module is on", () => {
+    expect(summarySentence(undefined, undefined)).toBe(
+      "Retrouvez ici l'activité de votre commune.",
+    );
+  });
+
   it("puts both together", () => {
     expect(summarySentence(appointments(3), reports(1))).toBe(
       "3 rendez-vous et 1 signalement attendent une réponse.",

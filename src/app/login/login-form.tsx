@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function LoginForm({ passwordChanged }: { passwordChanged: boolean }) {
+export type LoginNotice = {
+  tone: "error" | "success" | "info";
+  text: string;
+};
+
+export function LoginForm({ notice }: { notice: LoginNotice | null }) {
   const [state, formAction, pending] = useActionState(
     async (_: unknown, formData: FormData) => {
       const result = await login(formData);
@@ -22,11 +27,7 @@ export function LoginForm({ passwordChanged }: { passwordChanged: boolean }) {
   return (
     <form action={formAction}>
       <AuthCard>
-        {passwordChanged && (
-          <AuthAlert tone="success">
-            Votre mot de passe a été modifié. Connectez-vous avec le nouveau.
-          </AuthAlert>
-        )}
+        {notice && <AuthAlert tone={notice.tone}>{notice.text}</AuthAlert>}
 
         <div className="space-y-1.5">
           <Label htmlFor="email">Adresse e-mail</Label>

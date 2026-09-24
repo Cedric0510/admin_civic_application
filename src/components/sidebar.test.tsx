@@ -15,7 +15,7 @@ const staff = (
   name: "Camille Dubois",
   email: "camille@bessan.fr",
   role,
-  commune: { id: "c1", name: "Bessan", slug: "bessan" },
+  commune: { id: "c1", name: "Bessan", slug: "bessan", disabledModules: [] },
   ...overrides,
 });
 
@@ -41,6 +41,64 @@ describe("Sidebar", () => {
 
     render(<Sidebar staff={staff("SUPER_ADMIN", { commune: null })} managedCommune={null} />);
     expect(screen.getByRole("link", { name: "Communes" })).toBeInTheDocument();
+  });
+
+  it("hides the entries of the modules switched off for the commune, and the groups left empty", () => {
+    render(
+      <Sidebar
+        staff={staff("ADMINISTRATEUR", {
+          commune: {
+            id: "c1",
+            name: "Bessan",
+            slug: "bessan",
+            disabledModules: ["POLLS", "APPOINTMENTS"],
+          },
+        })}
+        managedCommune={null}
+      />,
+    );
+
+    expect(screen.queryByRole("link", { name: "Sondages" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Rendez-vous" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Agenda" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Actualités" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Signalements" })).toBeInTheDocument();
+  });
+
+  it("drops a whole group when all its modules are off", () => {
+    render(
+      <Sidebar
+        staff={staff("AGENT", {
+          commune: {
+            id: "c1",
+            name: "Bessan",
+            slug: "bessan",
+            disabledModules: ["APPOINTMENTS", "REPORTS"],
+          },
+        })}
+        managedCommune={null}
+      />,
+    );
+
+    expect(screen.queryByText("Habitants")).not.toBeInTheDocument();
+    expect(screen.getByText("Contenus")).toBeInTheDocument();
+  });
+
+  it("follows the commune a super-administrator is managing rather than none", () => {
+    render(
+      <Sidebar
+        staff={staff("SUPER_ADMIN", { commune: null })}
+        managedCommune={{
+          id: "c2",
+          name: "Saint-Martin",
+          slug: "saint-martin",
+          disabledModules: ["COMMERCES"],
+        }}
+      />,
+    );
+
+    expect(screen.queryByRole("link", { name: "Commerçants" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Services" })).toBeInTheDocument();
   });
 
   it("marks the page being viewed", () => {
@@ -72,7 +130,12 @@ describe("Sidebar", () => {
     render(
       <Sidebar
         staff={staff("SUPER_ADMIN", { commune: null })}
-        managedCommune={{ id: "c2", name: "Saint-Martin", slug: "saint-martin" }}
+        managedCommune={{
+          id: "c2",
+          name: "Saint-Martin",
+          slug: "saint-martin",
+          disabledModules: [],
+        }}
       />,
     );
 

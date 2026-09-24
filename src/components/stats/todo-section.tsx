@@ -16,63 +16,74 @@ export function TodoSection({
   scope,
   now,
 }: {
-  appointments: AppointmentStats;
-  reports: ReportStats;
+  appointments?: AppointmentStats;
+  reports?: ReportStats;
   scope: "commune" | "agent";
   now: Date;
 }) {
-  const { backlog } = reports;
+  if (!appointments && !reports) return null;
 
   return (
     <StatsSection title="À traiter maintenant">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <TaskCard
-          icon={CalendarClock}
-          title={
-            scope === "agent"
-              ? "Vos rendez-vous à confirmer"
-              : "Rendez-vous à confirmer"
-          }
-          count={appointments.pending}
-          unit={pluralize(appointments.pending, "demande", "demandes")}
-          urgency={urgencyOf(
-            appointments.pending,
-            waitingMinutes(appointments.oldestPendingSince, now),
-          )}
-          waiting={waitingDuration(appointments.oldestPendingSince, now)}
-          href="/appointments"
-          actionLabel="Voir les rendez-vous"
-        />
-        <TaskCard
-          icon={TriangleAlert}
-          title="Signalements à prendre en charge"
-          count={backlog.new}
-          unit={pluralize(backlog.new, "signalement", "signalements")}
-          urgency={urgencyOf(
-            backlog.new,
-            waitingMinutes(backlog.oldestNewSince, now),
-          )}
-          waiting={waitingDuration(backlog.oldestNewSince, now)}
-          href="/reports"
-          actionLabel="Voir les signalements"
-        >
-          {backlog.new + backlog.inProgress > 0 && (
-            <div className="pt-1">
-              <SegmentedBar
-                emptyLabel=""
-                segments={[
-                  { key: "new", label: "Nouveaux", value: backlog.new, tone: "bad" },
-                  {
-                    key: "progress",
-                    label: "Déjà en cours",
-                    value: backlog.inProgress,
-                    tone: "warn",
-                  },
-                ]}
-              />
-            </div>
-          )}
-        </TaskCard>
+      <div
+        className={`grid grid-cols-1 gap-4 ${appointments && reports ? "md:grid-cols-2" : ""}`}
+      >
+        {appointments && (
+          <TaskCard
+            icon={CalendarClock}
+            title={
+              scope === "agent"
+                ? "Vos rendez-vous à confirmer"
+                : "Rendez-vous à confirmer"
+            }
+            count={appointments.pending}
+            unit={pluralize(appointments.pending, "demande", "demandes")}
+            urgency={urgencyOf(
+              appointments.pending,
+              waitingMinutes(appointments.oldestPendingSince, now),
+            )}
+            waiting={waitingDuration(appointments.oldestPendingSince, now)}
+            href="/appointments"
+            actionLabel="Voir les rendez-vous"
+          />
+        )}
+        {reports && (
+          <TaskCard
+            icon={TriangleAlert}
+            title="Signalements à prendre en charge"
+            count={reports.backlog.new}
+            unit={pluralize(reports.backlog.new, "signalement", "signalements")}
+            urgency={urgencyOf(
+              reports.backlog.new,
+              waitingMinutes(reports.backlog.oldestNewSince, now),
+            )}
+            waiting={waitingDuration(reports.backlog.oldestNewSince, now)}
+            href="/reports"
+            actionLabel="Voir les signalements"
+          >
+            {reports.backlog.new + reports.backlog.inProgress > 0 && (
+              <div className="pt-1">
+                <SegmentedBar
+                  emptyLabel=""
+                  segments={[
+                    {
+                      key: "new",
+                      label: "Nouveaux",
+                      value: reports.backlog.new,
+                      tone: "bad",
+                    },
+                    {
+                      key: "progress",
+                      label: "Déjà en cours",
+                      value: reports.backlog.inProgress,
+                      tone: "warn",
+                    },
+                  ]}
+                />
+              </div>
+            )}
+          </TaskCard>
+        )}
       </div>
     </StatsSection>
   );

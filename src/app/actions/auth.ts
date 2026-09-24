@@ -20,6 +20,9 @@ export async function login(formData: FormData) {
     if (error instanceof ApiError && error.status === 401) {
       return { error: "Identifiants incorrects." };
     }
+    if (error instanceof ApiError && error.status === 403) {
+      return { error: error.message };
+    }
     return { error: "Impossible de contacter le serveur." };
   }
 

@@ -141,11 +141,14 @@ export function firstName(fullName: string): string {
 }
 
 export function summarySentence(
-  appointments: AppointmentStats,
-  reports: ReportStats,
+  appointments: AppointmentStats | undefined,
+  reports: ReportStats | undefined,
 ): string {
-  const waitingAppointments = appointments.pending;
-  const newReports = reports.backlog.new;
+  if (!appointments && !reports) {
+    return "Retrouvez ici l'activité de votre commune.";
+  }
+  const waitingAppointments = appointments?.pending ?? 0;
+  const newReports = reports?.backlog.new ?? 0;
 
   if (waitingAppointments === 0 && newReports === 0) {
     return "Tout est à jour : rien n'attend de réponse pour le moment.";

@@ -83,21 +83,23 @@ export function AuthCard({ children }: { children: React.ReactNode }) {
   );
 }
 
+const alertClasses = {
+  error: "bg-rose-50 text-rose-700",
+  success: "bg-emerald-50 text-emerald-700",
+  info: "bg-brand-50 text-brand-800",
+};
+
 export function AuthAlert({
   tone,
   children,
 }: {
-  tone: "error" | "success";
+  tone: keyof typeof alertClasses;
   children: React.ReactNode;
 }) {
   return (
     <p
       role={tone === "error" ? "alert" : "status"}
-      className={
-        tone === "error"
-          ? "rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700"
-          : "rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
-      }
+      className={`rounded-lg px-3 py-2 text-sm ${alertClasses[tone]}`}
     >
       {children}
     </p>

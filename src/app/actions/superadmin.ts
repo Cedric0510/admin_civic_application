@@ -5,10 +5,28 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { api, ApiError } from "@/lib/api/client";
 import { MANAGED_COMMUNE_COOKIE } from "@/lib/api/constants";
-import type { Commune } from "@/lib/types";
+import type { AppModule, Commune } from "@/lib/types";
 
 export async function getCommunes(): Promise<Commune[]> {
   return api.get<Commune[]>("/communes");
+}
+
+export async function setCommuneModules(
+  communeId: string,
+  disabledModules: AppModule[],
+): Promise<void> {
+  await api.put(`/communes/${communeId}/modules`, { disabledModules });
+  revalidatePath("/superadmin");
+  revalidatePath(`/superadmin/${communeId}`);
+}
+
+export async function setCommuneSuspended(
+  communeId: string,
+  suspended: boolean,
+): Promise<void> {
+  await api.patch(`/communes/${communeId}/access`, { suspended });
+  revalidatePath("/superadmin");
+  revalidatePath(`/superadmin/${communeId}`);
 }
 
 // Provisionne une commune et son premier administrateur en une seule

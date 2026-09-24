@@ -13,7 +13,9 @@ vi.mock("next/headers", () => ({
   cookies: () => Promise.resolve({ get: cookieGetMock }),
 }));
 
-const { getCurrentStaff, getManagedCommune } = await import("./session");
+const { getCurrentStaff, getManagedCommune, getStaffSession } = await import(
+  "./session"
+);
 const { ApiError } = await import("./api/client");
 
 describe("getCurrentStaff", () => {
@@ -55,13 +57,57 @@ describe("getCurrentStaff", () => {
   });
 });
 
+describe("getStaffSession", () => {
+  it("returns the staff profile when the token is valid", async () => {
+    const staff = { id: "1", name: "Alice" };
+    getMock.mockResolvedValue(staff);
+
+    await expect(getStaffSession()).resolves.toEqual({ staff });
+  });
+
+  it("tells an expired or invalid session from the 401", async () => {
+    getMock.mockRejectedValue(new ApiError(401, "Compte introuvable ou supprimé."));
+
+    await expect(getStaffSession()).resolves.toEqual({
+      staff: null,
+      failure: "expired",
+    });
+  });
+
+  it("tells a suspended commune from the 403 message, so the login page can explain it", async () => {
+    getMock.mockRejectedValue(
+      new ApiError(403, "L'accès de votre commune est suspendu. Contactez City-Co."),
+    );
+
+    await expect(getStaffSession()).resolves.toEqual({
+      staff: null,
+      failure: "suspended",
+    });
+  });
+
+  it("treats any other 403 as an expired session", async () => {
+    getMock.mockRejectedValue(new ApiError(403, "Forbidden resource"));
+
+    await expect(getStaffSession()).resolves.toEqual({
+      staff: null,
+      failure: "expired",
+    });
+  });
+
+  it("rethrows a server error rather than logging the user out", async () => {
+    getMock.mockRejectedValue(new ApiError(500, "Erreur serveur."));
+
+    await expect(getStaffSession()).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
 describe("getManagedCommune", () => {
   const agent = {
     id: "1",
     name: "Agent",
     email: "agent@ville.fr",
     role: "AGENT" as const,
-    commune: { id: "c1", name: "Ville", slug: "ville" },
+    commune: { id: "c1", name: "Ville", slug: "ville", disabledModules: [] },
   };
   const superAdminNoPick = {
     id: "2",

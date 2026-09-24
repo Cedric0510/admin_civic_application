@@ -104,11 +104,22 @@ export type CitySettings = {
   village_name: string;
 };
 
+export type AppModule =
+  | "ARTICLES"
+  | "POLLS"
+  | "SERVICES"
+  | "APPOINTMENTS"
+  | "COMMERCES"
+  | "REPORTS"
+  | "WEATHER";
+
 export type Commune = {
   id: string;
   name: string;
   slug: string;
   createdAt: string;
+  suspendedAt: string | null;
+  disabledModules: AppModule[];
 };
 
 export type StaffRole = "AGENT" | "ADMINISTRATEUR" | "SUPER_ADMIN";
@@ -224,8 +235,8 @@ export type ReportStats = {
 export type StatsOverview = {
   period: { days: StatsPeriodDays; from: string; to: string };
   scope: "commune" | "agent";
-  appointments: AppointmentStats;
-  reports: ReportStats;
+  appointments?: AppointmentStats;
+  reports?: ReportStats;
   citizens?: CitizenStats;
   articles?: ArticleStats;
   polls?: PollParticipation[];

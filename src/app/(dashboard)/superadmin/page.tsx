@@ -8,7 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { LogIn, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { LogIn, Plus, Settings2 } from "lucide-react";
 import { getCommunes, manageCommune } from "@/app/actions/superadmin";
 
 export default async function SuperAdminPage() {
@@ -42,7 +43,9 @@ export default async function SuperAdminPage() {
                 <TableHead>Nom</TableHead>
                 <TableHead>Identifiant (slug)</TableHead>
                 <TableHead>Créée le</TableHead>
-                <TableHead className="w-40 text-right">Actions</TableHead>
+                <TableHead>Accès</TableHead>
+                <TableHead>Modules</TableHead>
+                <TableHead className="w-64 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -55,14 +58,38 @@ export default async function SuperAdminPage() {
                   <TableCell className="text-sm text-gray-500">
                     {new Date(commune.createdAt).toLocaleDateString("fr-FR")}
                   </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={commune.suspendedAt ? "destructive" : "secondary"}
+                    >
+                      {commune.suspendedAt ? "Suspendu" : "Actif"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-500">
+                    {commune.disabledModules.length === 0
+                      ? "Tous actifs"
+                      : `${commune.disabledModules.length} désactivé${commune.disabledModules.length > 1 ? "s" : ""}`}
+                  </TableCell>
                   <TableCell className="text-right">
-                    <form action={manageCommune}>
-                      <input type="hidden" name="slug" value={commune.slug} />
-                      <Button type="submit" variant="outline" size="sm">
-                        <LogIn size={14} />
-                        Gérer
-                      </Button>
-                    </form>
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/superadmin/${commune.id}`}
+                        className={buttonVariants({
+                          variant: "outline",
+                          size: "sm",
+                        })}
+                      >
+                        <Settings2 size={14} />
+                        Accès et modules
+                      </Link>
+                      <form action={manageCommune}>
+                        <input type="hidden" name="slug" value={commune.slug} />
+                        <Button type="submit" variant="outline" size="sm">
+                          <LogIn size={14} />
+                          Gérer
+                        </Button>
+                      </form>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

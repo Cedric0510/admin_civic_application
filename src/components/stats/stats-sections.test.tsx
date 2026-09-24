@@ -143,6 +143,31 @@ describe("TodoSection", () => {
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 
+  it("shows only the card of the module that is on", () => {
+    const { unmount } = render(
+      <TodoSection appointments={appointments()} scope="commune" now={now} />,
+    );
+    expect(screen.getByText("Rendez-vous à confirmer")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Signalements à prendre en charge"),
+    ).not.toBeInTheDocument();
+    unmount();
+
+    render(<TodoSection reports={reports()} scope="commune" now={now} />);
+    expect(
+      screen.getByText("Signalements à prendre en charge"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Rendez-vous à confirmer"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows nothing when both modules are off", () => {
+    const { container } = render(<TodoSection scope="commune" now={now} />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it("keeps a calm tone while the oldest request is recent", () => {
     render(
       <TodoSection

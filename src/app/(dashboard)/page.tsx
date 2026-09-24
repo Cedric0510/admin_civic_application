@@ -120,19 +120,27 @@ export default async function DashboardPage({
       )}
       {overview.polls && <PollsSection polls={overview.polls} />}
 
-      <StatsSection
-        title="Relation avec les habitants"
-        description="Rapidité de vos réponses et volume de demandes."
-      >
-        <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
-          <AppointmentsSection
-            appointments={overview.appointments}
-            days={days}
-            scope={overview.scope}
-          />
-          <ReportsSection reports={overview.reports} days={days} />
-        </div>
-      </StatsSection>
+      {(overview.appointments || overview.reports) && (
+        <StatsSection
+          title="Relation avec les habitants"
+          description="Rapidité de vos réponses et volume de demandes."
+        >
+          <div
+            className={`grid grid-cols-1 items-start gap-4 ${overview.appointments && overview.reports ? "xl:grid-cols-2" : ""}`}
+          >
+            {overview.appointments && (
+              <AppointmentsSection
+                appointments={overview.appointments}
+                days={days}
+                scope={overview.scope}
+              />
+            )}
+            {overview.reports && (
+              <ReportsSection reports={overview.reports} days={days} />
+            )}
+          </div>
+        </StatsSection>
+      )}
     </div>
   );
 }

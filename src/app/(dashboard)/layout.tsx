@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
-import { getCurrentStaff, getManagedCommune } from "@/lib/session";
+import { getManagedCommune, getStaffSession } from "@/lib/session";
 
 export default async function DashboardLayout({
   children,
@@ -9,9 +9,9 @@ export default async function DashboardLayout({
 }) {
   // Le proxy ne fait qu'un contrôle de présence du cookie ; ici on revalide
   // réellement le token auprès de civic_api avant de rendre quoi que ce soit.
-  const staff = await getCurrentStaff();
+  const { staff, failure } = await getStaffSession();
   if (!staff) {
-    redirect("/login");
+    redirect(`/login?reason=${failure}`);
   }
   // staff déjà chargé : évite un second GET /staff/me dans getManagedCommune.
   const managedCommune = await getManagedCommune(staff);

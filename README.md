@@ -31,6 +31,15 @@ Tests : `npm test` ; contrôle du code : `npm run lint` ; build de production : 
 
 La page de connexion propose « Mot de passe oublié ? » : l'agent saisit son adresse e-mail et reçoit, à l'adresse enregistrée dans le logiciel, un lien valable 1 heure et à usage unique vers `/reset-password`. La réponse est la même que le compte existe ou non. Après le changement, les sessions ouvertes sont fermées et la personne est renvoyée vers la connexion. En local, les e-mails arrivent dans Mailpit (`http://localhost:8025`, voir le `docker-compose.yml` de civic_api). Les trois pages d'accès (`/login`, `/forgot-password`, `/reset-password`) sont publiques dans `src/proxy.ts`.
 
+## Accès et modules d'une commune (super-administrateur)
+
+Depuis « Communes », le lien « Accès et modules » ouvre la page de la commune :
+
+- **Suspendre l'accès** (avec confirmation) coupe le dashboard de cette commune : son personnel ne peut plus se connecter et les sessions ouvertes sont refusées à la requête suivante, avec un message explicite sur `/login?reason=suspended`. Les données sont conservées, l'application des habitants continue de fonctionner, « Réactiver l'accès » rétablit tout immédiatement.
+- **Modules** : sept interrupteurs (Actualités, Sondages, Services, Rendez-vous et agenda, Commerçants, Signalements, Météo), enregistrés à chaque bascule. Un module désactivé disparaît du menu, de l'accueil et de l'application des habitants ; sa page affiche une explication (avec un lien de retour pour le super-administrateur). Les rendez-vous dépendent des services : désactiver « Services » désactive aussi « Rendez-vous et agenda », qui ne peut revenir seul.
+
+Le filtrage de fond est fait par `civic_api` (403 sur les routes d'un module désactivé) ; le dashboard ne fait que masquer (`src/lib/modules.ts`, `src/components/module-gate.tsx`).
+
 ## Tableau de bord
 
 La page d'accueil se lit d'un coup d'œil : un bandeau résume ce qui attend une réponse, puis chaque bloc répond à une question en langage clair. Les chiffres portent sur 7, 30 ou 90 jours (`?period=`) et sont comparés à la période précédente.
@@ -54,6 +63,7 @@ src/components/stats/  cartes, graphiques (SVG/CSS) et sections du tableau de bo
 src/components/sidebar.tsx  menu latéral par rôle, tiroir sur mobile
 src/lib/api/           client HTTP vers civic_api
 src/lib/session.ts     membre du personnel connecté, commune gérée
+src/lib/modules.ts     modules activables et dépendances entre eux
 src/lib/stats*.ts      récupération et mise en forme des métriques
 src/lib/paris-time.ts  dates et heures en fuseau Europe/Paris
 src/components/ui/     composants shadcn/ui

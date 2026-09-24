@@ -33,6 +33,11 @@ describe("proxy", () => {
     expect(redirectTarget("/articles", true)).toBeNull();
   });
 
+  it("keeps the login page open, even with a cookie, when the server refused the session (no redirect loop)", () => {
+    expect(redirectTarget("/login?reason=suspended", true)).toBeNull();
+    expect(redirectTarget("/login?reason=expired", true)).toBeNull();
+  });
+
   it("does not open other pages that merely start like a public one", () => {
     expect(redirectTarget("/login-admin", false)).toBe("/login");
     expect(redirectTarget("/reset-password/extra", false)).toBe("/login");

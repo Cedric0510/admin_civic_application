@@ -11,7 +11,7 @@ const redirectMock = vi.fn();
 vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 vi.mock("next/headers", () => ({ cookies: vi.fn() }));
 
-const { requestPasswordReset, resetPassword } = await import("./auth");
+const { login, requestPasswordReset, resetPassword } = await import("./auth");
 const { ApiError } = await import("@/lib/api/client");
 
 function form(fields: Record<string, string>): FormData {
@@ -23,6 +23,36 @@ function form(fields: Record<string, string>): FormData {
 beforeEach(() => {
   postMock.mockReset();
   redirectMock.mockReset();
+});
+
+describe("login", () => {
+  const credentials = () => form({ email: "a@b.fr", password: "secret123" });
+
+  it("says the credentials are wrong on a 401", async () => {
+    postMock.mockRejectedValue(new ApiError(401, "Identifiants invalides."));
+
+    await expect(login(credentials())).resolves.toEqual({
+      error: "Identifiants incorrects.",
+    });
+  });
+
+  it("relays the reason on a 403, so a suspended commune is explained", async () => {
+    postMock.mockRejectedValue(
+      new ApiError(403, "L'accès de votre commune est suspendu. Contactez City-Co."),
+    );
+
+    await expect(login(credentials())).resolves.toEqual({
+      error: "L'accès de votre commune est suspendu. Contactez City-Co.",
+    });
+  });
+
+  it("says the server cannot be reached otherwise", async () => {
+    postMock.mockRejectedValue(new ApiError(0, "x"));
+
+    await expect(login(credentials())).resolves.toEqual({
+      error: "Impossible de contacter le serveur.",
+    });
+  });
 });
 
 describe("requestPasswordReset", () => {

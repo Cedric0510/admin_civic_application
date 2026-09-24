@@ -18,7 +18,11 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (hasToken && pathname === "/login") {
+  if (
+    hasToken &&
+    pathname === "/login" &&
+    !request.nextUrl.searchParams.has("reason")
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);

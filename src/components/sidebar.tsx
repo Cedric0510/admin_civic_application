@@ -25,9 +25,16 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/actions/auth";
 import { stopManagingCommune } from "@/app/actions/superadmin";
+import { isModuleEnabled } from "@/lib/modules";
 import type { CurrentStaff, ManagedCommune } from "@/lib/session";
+import type { AppModule } from "@/lib/types";
 
-type NavItem = { href: string; label: string; icon: LucideIcon };
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  module?: AppModule;
+};
 type NavGroup = { label: string; items: NavItem[] };
 
 const roleLabels: Record<CurrentStaff["role"], string> = {
@@ -36,7 +43,10 @@ const roleLabels: Record<CurrentStaff["role"], string> = {
   SUPER_ADMIN: "Super administrateur",
 };
 
-function navGroups(role: CurrentStaff["role"]): NavGroup[] {
+function navGroups(
+  role: CurrentStaff["role"],
+  disabledModules: AppModule[],
+): NavGroup[] {
   const administration: NavItem[] = [
     ...(role !== "AGENT"
       ? [
@@ -49,7 +59,7 @@ function navGroups(role: CurrentStaff["role"]): NavGroup[] {
       : []),
   ];
 
-  return [
+  const groups: NavGroup[] = [
     {
       label: "Pilotage",
       items: [{ href: "/", label: "Tableau de bord", icon: LayoutDashboard }],
@@ -57,22 +67,61 @@ function navGroups(role: CurrentStaff["role"]): NavGroup[] {
     {
       label: "Contenus",
       items: [
-        { href: "/articles", label: "Actualités", icon: Newspaper },
-        { href: "/polls", label: "Sondages", icon: BarChart3 },
-        { href: "/services", label: "Services", icon: Wrench },
-        { href: "/commerces", label: "Commerçants", icon: Store },
+        {
+          href: "/articles",
+          label: "Actualités",
+          icon: Newspaper,
+          module: "ARTICLES",
+        },
+        { href: "/polls", label: "Sondages", icon: BarChart3, module: "POLLS" },
+        {
+          href: "/services",
+          label: "Services",
+          icon: Wrench,
+          module: "SERVICES",
+        },
+        {
+          href: "/commerces",
+          label: "Commerçants",
+          icon: Store,
+          module: "COMMERCES",
+        },
       ],
     },
     {
       label: "Habitants",
       items: [
-        { href: "/appointments", label: "Rendez-vous", icon: CalendarDays },
-        { href: "/agenda", label: "Agenda", icon: CalendarClock },
-        { href: "/reports", label: "Signalements", icon: AlertTriangle },
+        {
+          href: "/appointments",
+          label: "Rendez-vous",
+          icon: CalendarDays,
+          module: "APPOINTMENTS",
+        },
+        {
+          href: "/agenda",
+          label: "Agenda",
+          icon: CalendarClock,
+          module: "APPOINTMENTS",
+        },
+        {
+          href: "/reports",
+          label: "Signalements",
+          icon: AlertTriangle,
+          module: "REPORTS",
+        },
       ],
     },
     { label: "Administration", items: administration },
-  ].filter((group) => group.items.length > 0);
+  ];
+
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) => !item.module || isModuleEnabled(disabledModules, item.module),
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
 }
 
 function initials(name: string): string {
@@ -98,6 +147,8 @@ function SidebarContent({
   const pathname = usePathname();
   const isManagingAsSuperAdmin =
     staff.role === "SUPER_ADMIN" && managedCommune !== null;
+  const disabledModules =
+    managedCommune?.disabledModules ?? staff.commune?.disabledModules ?? [];
 
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
@@ -140,7 +191,7 @@ function SidebarContent({
       </div>
 
       <nav aria-label="Navigation principale" className="flex-1 space-y-5 overflow-y-auto px-3 py-2">
-        {navGroups(staff.role).map((group) => (
+        {navGroups(staff.role, disabledModules).map((group) => (
           <div key={group.label} className="space-y-1">
             <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-brand-300/70">
               {group.label}

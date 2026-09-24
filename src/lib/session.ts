@@ -1,29 +1,56 @@
 import { cookies } from "next/headers";
 import { api, ApiError } from "@/lib/api/client";
 import { MANAGED_COMMUNE_COOKIE } from "@/lib/api/constants";
+import type { AppModule } from "@/lib/types";
 
 export type CurrentStaff = {
   id: string;
   name: string;
   email: string;
   role: "AGENT" | "ADMINISTRATEUR" | "SUPER_ADMIN";
-  commune: { id: string; name: string; slug: string } | null;
+  commune: {
+    id: string;
+    name: string;
+    slug: string;
+    disabledModules: AppModule[];
+  } | null;
 };
 
-// null si pas connecté ou token invalide/expiré — jamais une exception, pour
-// que les pages puissent simplement tester le résultat et rediriger.
-export async function getCurrentStaff(): Promise<CurrentStaff | null> {
+export type SessionFailure = "expired" | "suspended";
+
+export type StaffSession =
+  | { staff: CurrentStaff; failure?: undefined }
+  | { staff: null; failure: SessionFailure };
+
+// La suspension est distinguée de l'expiration : le jeton (et donc le cookie)
+// reste valide, l'utilisateur doit comprendre pourquoi il est renvoyé vers la
+// connexion plutôt que de croire à une panne.
+export async function getStaffSession(): Promise<StaffSession> {
   try {
-    return await api.get<CurrentStaff>("/staff/me");
+    return { staff: await api.get<CurrentStaff>("/staff/me") };
   } catch (error) {
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
-      return null;
+      return {
+        staff: null,
+        failure: /suspendu/i.test(error.message) ? "suspended" : "expired",
+      };
     }
     throw error;
   }
 }
 
-export type ManagedCommune = { id: string; name: string; slug: string };
+// null si pas connecté ou token invalide/expiré — jamais une exception, pour
+// que les pages puissent simplement tester le résultat et rediriger.
+export async function getCurrentStaff(): Promise<CurrentStaff | null> {
+  return (await getStaffSession()).staff;
+}
+
+export type ManagedCommune = {
+  id: string;
+  name: string;
+  slug: string;
+  disabledModules: AppModule[];
+};
 
 // La commune sur laquelle l'utilisateur connecté agit réellement : la
 // sienne pour un agent/administrateur (communeId non-null), ou celle
