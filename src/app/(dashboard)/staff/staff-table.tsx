@@ -1,8 +1,9 @@
 "use client";
 
-import { deleteStaff, updateStaffRole } from "@/app/actions/staff";
+import { deleteStaff, updateStaff } from "@/app/actions/staff";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -19,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { StaffMember, StaffRole } from "@/lib/types";
@@ -38,12 +39,14 @@ const editableRoles: StaffRole[] = ["AGENT", "ADMINISTRATEUR"];
 export function StaffTable({ staff }: { staff: StaffMember[] }) {
   const [pending, startTransition] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState<StaffMember | null>(null);
+  const [draftName, setDraftName] = useState("");
 
-  function handleRoleChange(id: string, role: StaffRole) {
+  function run(action: () => Promise<void>, success: string) {
     startTransition(async () => {
       try {
-        await updateStaffRole(id, role);
-        toast.success("Rôle mis à jour.");
+        await action();
+        toast.success(success);
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Une erreur est survenue.",
@@ -52,18 +55,21 @@ export function StaffTable({ staff }: { staff: StaffMember[] }) {
     });
   }
 
+  function startRename(member: StaffMember) {
+    setDraftName(member.name);
+    setRenaming(member);
+  }
+
+  function handleRename() {
+    if (!renaming) return;
+    const target = renaming;
+    setRenaming(null);
+    run(() => updateStaff(target.id, { name: draftName }), "Nom mis à jour.");
+  }
+
   function handleDelete(id: string) {
     setDeletingId(null);
-    startTransition(async () => {
-      try {
-        await deleteStaff(id);
-        toast.success("Agent supprimé.");
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Une erreur est survenue.",
-        );
-      }
-    });
+    run(() => deleteStaff(id), "Agent supprimé.");
   }
 
   if (staff.length === 0) {
@@ -73,84 +79,145 @@ export function StaffTable({ staff }: { staff: StaffMember[] }) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Email</TableHead>
-          <TableHead>Rôle</TableHead>
-          <TableHead>Depuis</TableHead>
-          <TableHead className="w-24 text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {staff.map((member) => (
-          <TableRow key={member.id}>
-            <TableCell className="font-medium">{member.email}</TableCell>
-            <TableCell>
-              {member.role === "SUPER_ADMIN" ? (
-                <Badge variant="outline">{roleLabels[member.role]}</Badge>
-              ) : (
-                <select
-                  value={member.role}
-                  disabled={pending}
-                  onChange={(e) =>
-                    handleRoleChange(member.id, e.target.value as StaffRole)
-                  }
-                  className="h-8 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                >
-                  {editableRoles.map((role) => (
-                    <option key={role} value={role}>
-                      {roleLabels[role]}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </TableCell>
-            <TableCell className="text-sm text-gray-500">
-              {new Date(member.createdAt).toLocaleDateString("fr-FR")}
-            </TableCell>
-            <TableCell className="text-right">
-              <Dialog
-                open={deletingId === member.id}
-                onOpenChange={(open) => setDeletingId(open ? member.id : null)}
-              >
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Nom</TableHead>
+            <TableHead>Rôle</TableHead>
+            <TableHead>Depuis</TableHead>
+            <TableHead className="w-28 text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {staff.map((member) => (
+            <TableRow key={member.id}>
+              <TableCell>
+                <p className="font-medium">{member.name}</p>
+                <p className="text-xs text-gray-500">{member.email}</p>
+              </TableCell>
+              <TableCell>
+                {member.role === "SUPER_ADMIN" ? (
+                  <Badge variant="outline">{roleLabels[member.role]}</Badge>
+                ) : (
+                  <select
+                    value={member.role}
+                    disabled={pending}
+                    onChange={(e) =>
+                      run(
+                        () =>
+                          updateStaff(member.id, {
+                            role: e.target.value as StaffRole,
+                          }),
+                        "Rôle mis à jour.",
+                      )
+                    }
+                    className="h-8 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                  >
+                    {editableRoles.map((role) => (
+                      <option key={role} value={role}>
+                        {roleLabels[role]}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </TableCell>
+              <TableCell className="text-sm text-gray-500">
+                {new Date(member.createdAt).toLocaleDateString("fr-FR")}
+              </TableCell>
+              <TableCell className="text-right">
                 <Button
                   variant="ghost"
                   size="icon"
-                  disabled={member.role === "SUPER_ADMIN"}
-                  onClick={() => setDeletingId(member.id)}
+                  aria-label={`Renommer ${member.name}`}
+                  onClick={() => startRename(member)}
                 >
-                  <Trash2 size={16} className="text-red-500" />
+                  <Pencil size={16} className="text-gray-500" />
                 </Button>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Supprimer cet agent ?</DialogTitle>
-                    <DialogDescription>
-                      &quot;{member.email}&quot; perdra immédiatement l&apos;accès
-                      au dashboard. Cette action est irréversible.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setDeletingId(null)}
-                    >
-                      Annuler
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      disabled={pending}
-                      onClick={() => handleDelete(member.id)}
-                    >
-                      Supprimer
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+                <Dialog
+                  open={deletingId === member.id}
+                  onOpenChange={(open) =>
+                    setDeletingId(open ? member.id : null)
+                  }
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Supprimer ${member.name}`}
+                    disabled={member.role === "SUPER_ADMIN"}
+                    onClick={() => setDeletingId(member.id)}
+                  >
+                    <Trash2 size={16} className="text-red-500" />
+                  </Button>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Supprimer cet agent ?</DialogTitle>
+                      <DialogDescription>
+                        &quot;{member.name}&quot; perdra immédiatement
+                        l&apos;accès au dashboard. Cette action est
+                        irréversible.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setDeletingId(null)}
+                      >
+                        Annuler
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        disabled={pending}
+                        onClick={() => handleDelete(member.id)}
+                      >
+                        Supprimer
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <Dialog
+        open={renaming !== null}
+        onOpenChange={(open) => {
+          if (!open) setRenaming(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Renommer</DialogTitle>
+            <DialogDescription>
+              Ce nom remplace l&apos;email dans les menus du dashboard.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={draftName}
+            minLength={2}
+            maxLength={100}
+            onChange={(e) => setDraftName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && draftName.trim().length >= 2) {
+                handleRename();
+              }
+            }}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenaming(null)}>
+              Annuler
+            </Button>
+            <Button
+              disabled={pending || draftName.trim().length < 2}
+              onClick={handleRename}
+            >
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

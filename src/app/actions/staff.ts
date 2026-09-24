@@ -17,6 +17,7 @@ export async function getStaff(): Promise<StaffMember[]> {
 export async function createStaff(formData: FormData) {
   const commune = await getManagedCommune();
   await api.post("/staff", {
+    name: formData.get("name") as string,
     email: formData.get("email") as string,
     password: formData.get("password") as string,
     role: formData.get("role") as StaffRole,
@@ -25,8 +26,11 @@ export async function createStaff(formData: FormData) {
   revalidatePath("/staff");
 }
 
-export async function updateStaffRole(id: string, role: StaffRole) {
-  await api.patch(`/staff/${id}`, { role });
+export async function updateStaff(
+  id: string,
+  changes: { role?: StaffRole; name?: string },
+) {
+  await api.patch(`/staff/${id}`, changes);
   revalidatePath("/staff");
 }
 

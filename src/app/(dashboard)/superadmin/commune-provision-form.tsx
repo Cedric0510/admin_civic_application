@@ -62,6 +62,17 @@ export function CommuneProvisionForm() {
           Premier compte administrateur
         </h2>
         <div className="space-y-1">
+          <Label htmlFor="adminName">Nom *</Label>
+          <Input
+            id="adminName"
+            name="adminName"
+            placeholder="Marie Durand"
+            minLength={2}
+            maxLength={100}
+            required
+          />
+        </div>
+        <div className="space-y-1">
           <Label htmlFor="adminEmail">Email *</Label>
           <Input
             id="adminEmail"

@@ -20,6 +20,7 @@ export async function getCommunes(): Promise<Commune[]> {
 export async function provisionCommune(formData: FormData) {
   const name = formData.get("communeName") as string;
   const slug = formData.get("communeSlug") as string;
+  const adminName = formData.get("adminName") as string;
   const adminEmail = formData.get("adminEmail") as string;
   const adminPassword = formData.get("adminPassword") as string;
 
@@ -27,6 +28,7 @@ export async function provisionCommune(formData: FormData) {
 
   try {
     await api.post("/staff", {
+      name: adminName,
       email: adminEmail,
       password: adminPassword,
       role: "ADMINISTRATEUR",

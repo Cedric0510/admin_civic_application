@@ -29,6 +29,21 @@ export function StaffForm() {
   return (
     <form action={handleSubmit} className="space-y-4">
       <div className="space-y-1">
+        <Label htmlFor="name">Nom *</Label>
+        <Input
+          id="name"
+          name="name"
+          placeholder="ex. Marie Durand"
+          minLength={2}
+          maxLength={100}
+          required
+        />
+        <p className="text-xs text-gray-500">
+          Affiché dans les menus à la place de l&apos;email.
+        </p>
+      </div>
+
+      <div className="space-y-1">
         <Label htmlFor="email">Email *</Label>
         <Input id="email" name="email" type="email" required />
       </div>

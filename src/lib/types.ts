@@ -42,7 +42,7 @@ export type Appointment = {
   createdAt: string;
   citizen: { email: string };
   service: { name: string };
-  agent: { email: string } | null;
+  agent: { name: string } | null;
 };
 
 export type Service = {
@@ -60,7 +60,7 @@ export type Service = {
 
 export type ServiceAgent = {
   id: string;
-  email: string;
+  name: string;
   role: StaffRole;
 };
 
@@ -115,6 +115,7 @@ export type StaffRole = "AGENT" | "ADMINISTRATEUR" | "SUPER_ADMIN";
 
 export type StaffMember = {
   id: string;
+  name: string;
   email: string;
   role: StaffRole;
   createdAt: string;

@@ -24,7 +24,10 @@ export default async function EditServicePage({
     canAffiliate ? getStaff() : Promise.resolve(null),
   ]);
   const candidates =
-    members?.filter((member) => member.role !== "SUPER_ADMIN") ?? null;
+    members
+      ?.filter((member) => member.role !== "SUPER_ADMIN")
+      .map(({ id: memberId, name, role }) => ({ id: memberId, name, role })) ??
+    null;
 
   return (
     <div className="space-y-6 max-w-2xl">

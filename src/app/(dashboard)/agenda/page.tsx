@@ -108,7 +108,7 @@ export default async function AgendaPage({
                 }),
               )}
             >
-              {member.email}
+              {member.name}
             </Link>
           ))}
         </div>

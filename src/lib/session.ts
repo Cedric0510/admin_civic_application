@@ -4,6 +4,7 @@ import { MANAGED_COMMUNE_COOKIE } from "@/lib/api/constants";
 
 export type CurrentStaff = {
   id: string;
+  name: string;
   email: string;
   role: "AGENT" | "ADMINISTRATEUR" | "SUPER_ADMIN";
   commune: { id: string; name: string; slug: string } | null;

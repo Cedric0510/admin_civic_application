@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import type { ServiceAgent, StaffMember } from "@/lib/types";
+import type { ServiceAgent, StaffRole } from "@/lib/types";
 
-const ROLE_LABELS: Record<StaffMember["role"], string> = {
+const ROLE_LABELS: Record<StaffRole, string> = {
   AGENT: "Agent",
   ADMINISTRATEUR: "Administrateur",
   SUPER_ADMIN: "Super administrateur",
@@ -21,7 +21,7 @@ export function ServiceAgentsSection({
 }: {
   serviceId: string;
   affiliated: ServiceAgent[];
-  candidates: StaffMember[] | null;
+  candidates: ServiceAgent[] | null;
 }) {
   const [selected, setSelected] = useState(
     () => new Set(affiliated.map((agent) => agent.id)),
@@ -70,7 +70,7 @@ export function ServiceAgentsSection({
         ) : (
           <ul className="space-y-1 text-sm text-gray-700">
             {affiliated.map((agent) => (
-              <li key={agent.id}>{agent.email}</li>
+              <li key={agent.id}>{agent.name}</li>
             ))}
           </ul>
         )
@@ -90,7 +90,7 @@ export function ServiceAgentsSection({
                       checked={selected.has(member.id)}
                       onChange={() => toggle(member.id)}
                     />
-                    <span>{member.email}</span>
+                    <span>{member.name}</span>
                     <span className="text-xs text-gray-400">
                       {ROLE_LABELS[member.role]}
                     </span>

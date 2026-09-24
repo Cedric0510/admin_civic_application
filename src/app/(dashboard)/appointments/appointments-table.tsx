@@ -159,7 +159,7 @@ export function AppointmentsTable({
                   {formatDateTime(appt.startsAt)}
                 </TableCell>
                 <TableCell className="text-sm text-gray-500">
-                  {appt.agent?.email ?? "—"}
+                  {appt.agent?.name ?? "—"}
                 </TableCell>
                 <TableCell className="text-sm text-gray-500 max-w-xs truncate">
                   {appt.message ?? "—"}

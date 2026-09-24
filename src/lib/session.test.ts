@@ -20,6 +20,7 @@ describe("getCurrentStaff", () => {
   it("returns the staff profile when the token is valid", async () => {
     const staff = {
       id: "1",
+      name: "Alice",
       email: "a@b.com",
       role: "AGENT" as const,
       commune: { id: "c1", name: "Ville", slug: "ville" },
@@ -57,12 +58,14 @@ describe("getCurrentStaff", () => {
 describe("getManagedCommune", () => {
   const agent = {
     id: "1",
+    name: "Agent",
     email: "agent@ville.fr",
     role: "AGENT" as const,
     commune: { id: "c1", name: "Ville", slug: "ville" },
   };
   const superAdminNoPick = {
     id: "2",
+    name: "Super",
     email: "super@city-co.dev",
     role: "SUPER_ADMIN" as const,
     commune: null,
