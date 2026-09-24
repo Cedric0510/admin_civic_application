@@ -29,20 +29,25 @@ Tests : `npm test` ; contrôle du code : `npm run lint` ; build de production : 
 
 ## Tableau de bord
 
-La page d'accueil affiche les métriques de la commune sur 7, 30 ou 90 jours (`?period=`), chacune comparée à la période précédente.
+La page d'accueil se lit d'un coup d'œil : un bandeau résume ce qui attend une réponse, puis chaque bloc répond à une question en langage clair. Les chiffres portent sur 7, 30 ou 90 jours (`?period=`) et sont comparés à la période précédente.
 
-- **À traiter maintenant** : rendez-vous en attente et signalements nouveaux, avec l'ancienneté du plus ancien.
-- **Habitants**, **Actualités**, **Sondages** (administrateurs) : comptes inscrits et arrivées par jour, lectures d'articles et les plus lus, participation à chaque sondage.
-- **Rendez-vous** et **Signalements** (tous) : délai de réponse habituel (médiane) et moyen, volume reçu, catégories de signalements. Pour un agent, les rendez-vous se limitent à ceux qui lui sont attribués.
+- **À traiter maintenant** : rendez-vous à confirmer et signalements à prendre en charge. La carte se colore selon l'ancienneté de la plus ancienne demande (dans les temps, à traiter rapidement, en retard) et mène à la liste concernée.
+- **Habitants**, **Actualités**, **Sondages** (administrateurs) : arrivées par jour, lectures par jour avec les articles les plus lus, participation à chaque sondage en anneau.
+- **Relation avec les habitants** (tous) : part des demandes traitées en moins de 24 h, délai habituel, répartition des délais, devenir des demandes reçues (confirmés, en attente, annulés / nouveaux, en cours, traités), volume par jour et catégories de signalements. Pour un agent, les rendez-vous se limitent à ceux qui lui sont attribués.
 
-Tout est rendu côté serveur, sans bibliothèque de graphiques : les histogrammes sont en CSS et exposent un libellé pour les lecteurs d'écran. Les droits sont appliqués par l'API, qui n'envoie pas aux agents les sections réservées aux administrateurs.
+Tout est rendu côté serveur, sans bibliothèque de graphiques : courbes, histogrammes et anneaux sont en SVG/CSS et exposent un libellé pour les lecteurs d'écran. Les droits sont appliqués par l'API, qui n'envoie pas aux agents les sections réservées aux administrateurs.
+
+## Identité visuelle
+
+La couleur de marque reprend le bleu de l'application mobile ; elle est définie une seule fois dans `src/app/globals.css` (échelle `brand-50` à `brand-950`, bouton principal, fond des pages). Le menu latéral est groupé par thème et devient un tiroir sur mobile.
 
 ## Structure
 
 ```
 src/app/(dashboard)/   pages du tableau de bord (un dossier par domaine)
 src/app/actions/       Server Actions, un fichier par domaine
-src/components/stats/  cartes, graphiques et sections du tableau de bord
+src/components/stats/  cartes, graphiques (SVG/CSS) et sections du tableau de bord
+src/components/sidebar.tsx  menu latéral par rôle, tiroir sur mobile
 src/lib/api/           client HTTP vers civic_api
 src/lib/session.ts     membre du personnel connecté, commune gérée
 src/lib/stats*.ts      récupération et mise en forme des métriques

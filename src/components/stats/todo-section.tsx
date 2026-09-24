@@ -1,8 +1,14 @@
 import { CalendarClock, TriangleAlert } from "lucide-react";
 import type { AppointmentStats, ReportStats } from "@/lib/types";
-import { waitingDuration } from "@/lib/stats-format";
-import { StatCard } from "./stat-card";
+import {
+  pluralize,
+  urgencyOf,
+  waitingDuration,
+  waitingMinutes,
+} from "@/lib/stats-format";
+import { SegmentedBar } from "./segmented-bar";
 import { StatsSection } from "./stats-section";
+import { TaskCard } from "./task-card";
 
 export function TodoSection({
   appointments,
@@ -15,42 +21,58 @@ export function TodoSection({
   scope: "commune" | "agent";
   now: Date;
 }) {
-  const oldestAppointment = waitingDuration(appointments.oldestPendingSince, now);
-  const oldestReport = waitingDuration(reports.backlog.oldestNewSince, now);
-  const reportCaption = [
-    `${reports.backlog.inProgress} en cours`,
-    oldestReport ? `le plus ancien attend ${oldestReport}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const { backlog } = reports;
 
   return (
     <StatsSection title="À traiter maintenant">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <StatCard
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <TaskCard
           icon={CalendarClock}
-          accent={appointments.pending > 0 ? "red" : "green"}
-          label={
+          title={
             scope === "agent"
-              ? "Vos rendez-vous en attente"
-              : "Rendez-vous en attente"
+              ? "Vos rendez-vous à confirmer"
+              : "Rendez-vous à confirmer"
           }
-          value={appointments.pending}
-          caption={
-            oldestAppointment
-              ? `Le plus ancien attend ${oldestAppointment}`
-              : "Aucune demande en attente"
-          }
+          count={appointments.pending}
+          unit={pluralize(appointments.pending, "demande", "demandes")}
+          urgency={urgencyOf(
+            appointments.pending,
+            waitingMinutes(appointments.oldestPendingSince, now),
+          )}
+          waiting={waitingDuration(appointments.oldestPendingSince, now)}
           href="/appointments"
+          actionLabel="Voir les rendez-vous"
         />
-        <StatCard
+        <TaskCard
           icon={TriangleAlert}
-          accent={reports.backlog.new > 0 ? "red" : "green"}
-          label="Signalements nouveaux"
-          value={reports.backlog.new}
-          caption={reportCaption}
+          title="Signalements à prendre en charge"
+          count={backlog.new}
+          unit={pluralize(backlog.new, "signalement", "signalements")}
+          urgency={urgencyOf(
+            backlog.new,
+            waitingMinutes(backlog.oldestNewSince, now),
+          )}
+          waiting={waitingDuration(backlog.oldestNewSince, now)}
           href="/reports"
-        />
+          actionLabel="Voir les signalements"
+        >
+          {backlog.new + backlog.inProgress > 0 && (
+            <div className="pt-1">
+              <SegmentedBar
+                emptyLabel=""
+                segments={[
+                  { key: "new", label: "Nouveaux", value: backlog.new, tone: "bad" },
+                  {
+                    key: "progress",
+                    label: "Déjà en cours",
+                    value: backlog.inProgress,
+                    tone: "warn",
+                  },
+                ]}
+              />
+            </div>
+          )}
+        </TaskCard>
       </div>
     </StatsSection>
   );

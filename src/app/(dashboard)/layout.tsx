@@ -17,10 +17,12 @@ export default async function DashboardLayout({
   const managedCommune = await getManagedCommune(staff);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="min-h-screen md:flex">
       <Sidebar staff={staff} managedCommune={managedCommune} />
-      <main className="flex-1 bg-gray-50 overflow-auto">
-        <div className="max-w-6xl mx-auto px-6 py-8">{children}</div>
+      <main className="min-w-0 flex-1">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          {children}
+        </div>
       </main>
     </div>
   );

@@ -168,6 +168,7 @@ export type DelayStats = {
   answered: number;
   medianMinutes: number | null;
   meanMinutes: number | null;
+  buckets: number[];
 };
 
 export type DelayTrend = { current: DelayStats; previous: DelayStats };
@@ -200,6 +201,8 @@ export type AppointmentStats = {
   pending: number;
   oldestPendingSince: string | null;
   received: Trend;
+  receivedByDay: DailyCount[];
+  outcomes: { pending: number; confirmed: number; cancelled: number };
   responseDelay: DelayTrend;
 };
 
@@ -210,6 +213,8 @@ export type ReportStats = {
     oldestNewSince: string | null;
   };
   received: Trend;
+  receivedByDay: DailyCount[];
+  byStatus: { new: number; inProgress: number; treated: number };
   byCategory: { category: ReportCategory; count: number }[];
   responseDelay: DelayTrend;
 };

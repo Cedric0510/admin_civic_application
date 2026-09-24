@@ -1,11 +1,22 @@
+import type {
+  AppointmentStats,
+  DailyCount,
+  ReportStats,
+} from "@/lib/types";
+
 const MINUTES_PER_HOUR = 60;
 const MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR;
+const SOON_AFTER_MINUTES = MINUTES_PER_DAY;
+const LATE_AFTER_MINUTES = 3 * MINUTES_PER_DAY;
+const WITHIN_A_DAY_BUCKETS = 3;
 
 export type TrendView = {
   direction: "up" | "down" | "flat";
   tone: "good" | "bad" | "neutral";
   label: string;
 };
+
+export type Urgency = "clear" | "calm" | "soon" | "late";
 
 export function formatDuration(minutes: number | null): string {
   if (minutes === null) return "—";
@@ -30,13 +41,24 @@ export function formatDuration(minutes: number | null): string {
   return hours === 0 ? `${days} j` : `${days} j ${hours} h`;
 }
 
+export function waitingMinutes(since: string | null, now: Date): number | null {
+  if (since === null) return null;
+  const minutes = (now.getTime() - new Date(since).getTime()) / 60000;
+  return Math.max(1, minutes);
+}
+
 export function waitingDuration(
   since: string | null,
   now: Date,
 ): string | null {
-  if (since === null) return null;
-  const minutes = (now.getTime() - new Date(since).getTime()) / 60000;
-  return formatDuration(Math.max(1, minutes));
+  const minutes = waitingMinutes(since, now);
+  return minutes === null ? null : formatDuration(minutes);
+}
+
+export function urgencyOf(count: number, oldestWaiting: number | null): Urgency {
+  if (count === 0) return "clear";
+  if (oldestWaiting === null || oldestWaiting < SOON_AFTER_MINUTES) return "calm";
+  return oldestWaiting < LATE_AFTER_MINUTES ? "soon" : "late";
 }
 
 function signed(delta: number, text: string): string {
@@ -83,6 +105,58 @@ export function delayTrend(
     tone: delta < 0 ? "good" : "bad",
     label: `${signed(delta, formatDuration(Math.abs(delta)))} vs ${days} j précédents`,
   };
+}
+
+export function withinDayRate(buckets: number[]): number | null {
+  const total = buckets.reduce((sum, count) => sum + count, 0);
+  if (total === 0) return null;
+  const quick = buckets
+    .slice(0, WITHIN_A_DAY_BUCKETS)
+    .reduce((sum, count) => sum + count, 0);
+  return Math.round((quick / total) * 100);
+}
+
+export function mergeSeries(a: DailyCount[], b: DailyCount[]): DailyCount[] {
+  const second = new Map(b.map((day) => [day.date, day.count]));
+  return a.map((day) => ({
+    date: day.date,
+    count: day.count + (second.get(day.date) ?? 0),
+  }));
+}
+
+export function peakOf(series: DailyCount[]): DailyCount | null {
+  let peak: DailyCount | null = null;
+  for (const day of series) {
+    if (day.count > 0 && (peak === null || day.count > peak.count)) peak = day;
+  }
+  return peak;
+}
+
+export function capitalizeFirst(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+export function firstName(fullName: string): string {
+  return fullName.trim().split(/\s+/)[0] ?? fullName;
+}
+
+export function summarySentence(
+  appointments: AppointmentStats,
+  reports: ReportStats,
+): string {
+  const waitingAppointments = appointments.pending;
+  const newReports = reports.backlog.new;
+
+  if (waitingAppointments === 0 && newReports === 0) {
+    return "Tout est à jour : rien n'attend de réponse pour le moment.";
+  }
+  if (newReports === 0) {
+    return `${waitingAppointments} rendez-vous ${pluralize(waitingAppointments, "attend", "attendent")} une réponse.`;
+  }
+  if (waitingAppointments === 0) {
+    return `${newReports} ${pluralize(newReports, "signalement", "signalements")} ${pluralize(newReports, "attend", "attendent")} d'être pris en charge.`;
+  }
+  return `${waitingAppointments} rendez-vous et ${newReports} ${pluralize(newReports, "signalement", "signalements")} attendent une réponse.`;
 }
 
 export function formatNumber(value: number): string {

@@ -1,11 +1,20 @@
 import { describe, expect, it } from "vitest";
+import type { AppointmentStats, ReportStats } from "@/lib/types";
 import {
+  capitalizeFirst,
   countTrend,
   delayTrend,
+  firstName,
   formatDuration,
   formatNumber,
+  mergeSeries,
+  peakOf,
   pluralize,
+  summarySentence,
+  urgencyOf,
   waitingDuration,
+  waitingMinutes,
+  withinDayRate,
 } from "./stats-format";
 import { parseStatsPeriod } from "./stats";
 
@@ -110,6 +119,133 @@ describe("delayTrend", () => {
   it("cannot compare without both periods", () => {
     expect(delayTrend(60, null, 30)).toBeNull();
     expect(delayTrend(null, 60, 30)).toBeNull();
+  });
+});
+
+describe("urgencyOf", () => {
+  const day = 24 * 60;
+
+  it("is clear when nothing waits, whatever the age", () => {
+    expect(urgencyOf(0, null)).toBe("clear");
+    expect(urgencyOf(0, 10 * day)).toBe("clear");
+  });
+
+  it("gets more urgent as the oldest request ages", () => {
+    expect(urgencyOf(2, 5 * 60)).toBe("calm");
+    expect(urgencyOf(2, day - 1)).toBe("calm");
+    expect(urgencyOf(2, day)).toBe("soon");
+    expect(urgencyOf(2, 3 * day - 1)).toBe("soon");
+    expect(urgencyOf(2, 3 * day)).toBe("late");
+  });
+
+  it("stays calm when the age is unknown", () => {
+    expect(urgencyOf(2, null)).toBe("calm");
+  });
+});
+
+describe("waitingMinutes", () => {
+  const now = new Date("2026-09-24T12:00:00Z");
+
+  it("measures the wait in minutes, at least one", () => {
+    expect(waitingMinutes("2026-09-24T09:00:00Z", now)).toBe(180);
+    expect(waitingMinutes("2026-09-24T12:00:30Z", now)).toBe(1);
+    expect(waitingMinutes(null, now)).toBeNull();
+  });
+});
+
+describe("withinDayRate", () => {
+  it("is the share of answers given within 24 hours", () => {
+    expect(withinDayRate([1, 1, 1, 1, 0])).toBe(75);
+    expect(withinDayRate([0, 0, 0, 2, 2])).toBe(0);
+    expect(withinDayRate([5, 0, 0, 0, 0])).toBe(100);
+  });
+
+  it("is unknown without any answer", () => {
+    expect(withinDayRate([0, 0, 0, 0, 0])).toBeNull();
+    expect(withinDayRate([])).toBeNull();
+  });
+});
+
+describe("mergeSeries and peakOf", () => {
+  const a = [
+    { date: "2026-09-23", count: 1 },
+    { date: "2026-09-24", count: 4 },
+  ];
+
+  it("adds two daily series day by day", () => {
+    expect(
+      mergeSeries(a, [
+        { date: "2026-09-24", count: 2 },
+        { date: "2026-09-25", count: 9 },
+      ]),
+    ).toEqual([
+      { date: "2026-09-23", count: 1 },
+      { date: "2026-09-24", count: 6 },
+    ]);
+  });
+
+  it("finds the busiest day, the earliest one when tied, and none when all quiet", () => {
+    expect(peakOf(a)).toEqual({ date: "2026-09-24", count: 4 });
+    expect(
+      peakOf([
+        { date: "2026-09-23", count: 3 },
+        { date: "2026-09-24", count: 3 },
+      ]),
+    ).toEqual({ date: "2026-09-23", count: 3 });
+    expect(peakOf([{ date: "2026-09-23", count: 0 }])).toBeNull();
+    expect(peakOf([])).toBeNull();
+  });
+});
+
+describe("capitalizeFirst", () => {
+  it("only raises the first letter, leaving the other words alone", () => {
+    expect(capitalizeFirst("jeudi 24 septembre")).toBe("Jeudi 24 septembre");
+    expect(capitalizeFirst("")).toBe("");
+  });
+});
+
+describe("firstName", () => {
+  it("keeps the first word of a full name", () => {
+    expect(firstName("Camille Dubois")).toBe("Camille");
+    expect(firstName("  Martine  ")).toBe("Martine");
+    expect(firstName("")).toBe("");
+  });
+});
+
+describe("summarySentence", () => {
+  const appointments = (pending: number) =>
+    ({ pending }) as AppointmentStats;
+  const reports = (fresh: number) =>
+    ({ backlog: { new: fresh } }) as ReportStats;
+
+  it("reassures when nothing waits", () => {
+    expect(summarySentence(appointments(0), reports(0))).toBe(
+      "Tout est à jour : rien n'attend de réponse pour le moment.",
+    );
+  });
+
+  it("names what waits, in agreement with the count", () => {
+    expect(summarySentence(appointments(1), reports(0))).toBe(
+      "1 rendez-vous attend une réponse.",
+    );
+    expect(summarySentence(appointments(3), reports(0))).toBe(
+      "3 rendez-vous attendent une réponse.",
+    );
+    expect(summarySentence(appointments(0), reports(1))).toBe(
+      "1 signalement attend d'être pris en charge.",
+    );
+    expect(summarySentence(appointments(0), reports(4))).toBe(
+      "4 signalements attendent d'être pris en charge.",
+    );
+  });
+
+  it("puts both together", () => {
+    expect(summarySentence(appointments(3), reports(1))).toBe(
+      "3 rendez-vous et 1 signalement attendent une réponse.",
+    );
+    expect(summarySentence(appointments(2), reports(4))).toBe(
+      "2 rendez-vous et 4 signalements attendent une réponse.",
+    );
   });
 });
 

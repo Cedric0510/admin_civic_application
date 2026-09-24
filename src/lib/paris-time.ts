@@ -57,6 +57,15 @@ export function formatDateTime(instant: string | Date): string {
   });
 }
 
+export function formatLongDate(instant: string | Date): string {
+  return new Date(instant).toLocaleDateString("fr-FR", {
+    timeZone: TIME_ZONE,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
 export function formatTime(instant: string | Date): string {
   return new Date(instant).toLocaleTimeString("fr-FR", {
     timeZone: TIME_ZONE,

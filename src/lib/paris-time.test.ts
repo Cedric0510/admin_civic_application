@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addDays,
   formatDayMonth,
+  formatLongDate,
   formatTime,
   isValidDate,
   mondayOf,
@@ -19,6 +20,11 @@ describe("paris-time", () => {
     expect(parisHour("2026-07-15T07:00:00.000Z")).toBe(9);
     expect(parisHour("2026-01-15T08:00:00.000Z")).toBe(9);
     expect(parisHour("2026-07-15T22:00:00.000Z")).toBe(0);
+  });
+
+  it("writes the long date in French, following the Paris day", () => {
+    expect(formatLongDate("2026-09-24T12:00:00.000Z")).toBe("jeudi 24 septembre");
+    expect(formatLongDate("2026-09-24T22:30:00.000Z")).toBe("vendredi 25 septembre");
   });
 
   it("formats a time in Paris time", () => {

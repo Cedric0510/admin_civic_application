@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   LayoutDashboard,
   Newspaper,
@@ -15,31 +16,195 @@ import {
   LogOut,
   Building2,
   Users,
+  Landmark,
+  MapPin,
+  Menu,
+  X,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/actions/auth";
 import { stopManagingCommune } from "@/app/actions/superadmin";
 import type { CurrentStaff, ManagedCommune } from "@/lib/session";
 
-const baseNavItems = [
-  { href: "/", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/articles", label: "Actualités", icon: Newspaper },
-  { href: "/appointments", label: "Rendez-vous", icon: CalendarDays },
-  { href: "/agenda", label: "Agenda", icon: CalendarClock },
-  { href: "/polls", label: "Sondages", icon: BarChart3 },
-  { href: "/services", label: "Services", icon: Wrench },
-  { href: "/commerces", label: "Commerçants", icon: Store },
-  { href: "/reports", label: "Signalements", icon: AlertTriangle },
-];
+type NavItem = { href: string; label: string; icon: LucideIcon };
+type NavGroup = { label: string; items: NavItem[] };
 
-const staffNavItem = { href: "/staff", label: "Agents", icon: Users };
-const settingsNavItem = { href: "/settings", label: "Paramètres", icon: Settings };
-
-const superAdminNavItem = {
-  href: "/superadmin",
-  label: "Communes",
-  icon: Building2,
+const roleLabels: Record<CurrentStaff["role"], string> = {
+  AGENT: "Agent",
+  ADMINISTRATEUR: "Administrateur",
+  SUPER_ADMIN: "Super administrateur",
 };
+
+function navGroups(role: CurrentStaff["role"]): NavGroup[] {
+  const administration: NavItem[] = [
+    ...(role !== "AGENT"
+      ? [
+          { href: "/staff", label: "Agents", icon: Users },
+          { href: "/settings", label: "Paramètres", icon: Settings },
+        ]
+      : []),
+    ...(role === "SUPER_ADMIN"
+      ? [{ href: "/superadmin", label: "Communes", icon: Building2 }]
+      : []),
+  ];
+
+  return [
+    {
+      label: "Pilotage",
+      items: [{ href: "/", label: "Tableau de bord", icon: LayoutDashboard }],
+    },
+    {
+      label: "Contenus",
+      items: [
+        { href: "/articles", label: "Actualités", icon: Newspaper },
+        { href: "/polls", label: "Sondages", icon: BarChart3 },
+        { href: "/services", label: "Services", icon: Wrench },
+        { href: "/commerces", label: "Commerçants", icon: Store },
+      ],
+    },
+    {
+      label: "Habitants",
+      items: [
+        { href: "/appointments", label: "Rendez-vous", icon: CalendarDays },
+        { href: "/agenda", label: "Agenda", icon: CalendarClock },
+        { href: "/reports", label: "Signalements", icon: AlertTriangle },
+      ],
+    },
+    { label: "Administration", items: administration },
+  ].filter((group) => group.items.length > 0);
+}
+
+function initials(name: string): string {
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("") || "?"
+  );
+}
+
+function SidebarContent({
+  staff,
+  managedCommune,
+  onNavigate,
+}: {
+  staff: CurrentStaff;
+  managedCommune: ManagedCommune | null;
+  onNavigate: () => void;
+}) {
+  const pathname = usePathname();
+  const isManagingAsSuperAdmin =
+    staff.role === "SUPER_ADMIN" && managedCommune !== null;
+
+  return (
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+      <div className="space-y-3 px-5 pb-4 pt-6">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 shadow-lg shadow-brand-950/40">
+            <Landmark size={20} aria-hidden="true" />
+          </span>
+          <div className="leading-tight">
+            <p className="text-lg font-semibold tracking-tight">City-Co</p>
+            <p className="text-xs text-brand-200/80">Espace mairie</p>
+          </div>
+        </div>
+
+        {isManagingAsSuperAdmin ? (
+          <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2.5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-amber-300">
+              Gestion à distance
+            </p>
+            <p className="text-sm font-semibold text-amber-100">
+              {managedCommune.name}
+            </p>
+            <form action={stopManagingCommune}>
+              <button
+                type="submit"
+                className="mt-1 text-xs text-amber-300 underline underline-offset-2 hover:text-amber-200"
+              >
+                Quitter
+              </button>
+            </form>
+          </div>
+        ) : (
+          <p className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2 text-sm text-brand-100">
+            <MapPin size={14} aria-hidden="true" className="shrink-0 text-brand-300" />
+            <span className="truncate">
+              {staff.commune ? staff.commune.name : "Toutes les communes"}
+            </span>
+          </p>
+        )}
+      </div>
+
+      <nav aria-label="Navigation principale" className="flex-1 space-y-5 overflow-y-auto px-3 py-2">
+        {navGroups(staff.role).map((group) => (
+          <div key={group.label} className="space-y-1">
+            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-brand-300/70">
+              {group.label}
+            </p>
+            {group.items.map(({ href, label, icon: Icon }) => {
+              const active =
+                href === "/" ? pathname === "/" : pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={onNavigate}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-white/12 text-white"
+                      : "text-brand-100/80 hover:bg-white/8 hover:text-white",
+                  )}
+                >
+                  {active && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-brand-300"
+                    />
+                  )}
+                  <Icon size={18} aria-hidden="true" className={active ? "text-brand-200" : ""} />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
+
+      <div className="border-t border-white/10 p-3">
+        <div className="flex items-center gap-3 rounded-xl bg-white/5 p-2.5">
+          <span
+            aria-hidden="true"
+            className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-500 text-sm font-semibold text-white"
+          >
+            {initials(staff.name)}
+          </span>
+          <div className="min-w-0 flex-1 leading-tight">
+            <p className="truncate text-sm font-medium text-white">{staff.name}</p>
+            <p className="truncate text-xs text-brand-200/80">
+              {roleLabels[staff.role]}
+            </p>
+          </div>
+          <form action={logout}>
+            <button
+              type="submit"
+              aria-label="Se déconnecter"
+              title="Se déconnecter"
+              className="grid size-9 place-items-center rounded-lg text-brand-200 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <LogOut size={18} aria-hidden="true" />
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function Sidebar({
   staff,
@@ -48,80 +213,61 @@ export function Sidebar({
   staff: CurrentStaff;
   managedCommune: ManagedCommune | null;
 }) {
-  const pathname = usePathname();
-  // Agents/Paramètres : réservés ADMINISTRATEUR/SUPER_ADMIN côté API
-  // (SETTINGS_ROLES) -- un simple AGENT ne doit pas les voir dans le menu.
-  const items = [
-    ...baseNavItems,
-    ...(staff.role !== "AGENT" ? [staffNavItem, settingsNavItem] : []),
-    ...(staff.role === "SUPER_ADMIN" ? [superAdminNavItem] : []),
-  ];
-  // Un super-admin gérant une commune choisie via /superadmin, distinct
-  // d'un administrateur qui gère la sienne (staff.commune) -- l'un est
-  // temporaire et doit rester visuellement non-ambigu, l'autre non.
-  const isManagingAsSuperAdmin = staff.role === "SUPER_ADMIN" && managedCommune !== null;
+  const [open, setOpen] = useState(false);
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-gray-900 text-white flex flex-col min-h-screen">
-      <div className="px-6 py-5 border-b border-gray-800">
-        <span className="text-xl font-bold tracking-tight">City-Co</span>
-        {isManagingAsSuperAdmin ? (
-          <div className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-2.5 py-2">
-            <p className="text-[11px] uppercase tracking-wide text-amber-400">
-              Gestion à distance
-            </p>
-            <p className="text-sm font-semibold text-amber-200">
-              {managedCommune.name}
-            </p>
-            <form action={stopManagingCommune}>
-              <button
-                type="submit"
-                className="mt-1 text-xs text-amber-400 underline hover:text-amber-300"
-              >
-                Quitter
-              </button>
-            </form>
-          </div>
-        ) : (
-          <p className="text-xs text-gray-400 mt-0.5">
-            {staff.commune ? staff.commune.name : "Super administrateur"}
-          </p>
-        )}
-      </div>
+    <>
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between bg-sidebar px-4 text-sidebar-foreground md:hidden">
+        <span className="flex items-center gap-2.5 font-semibold tracking-tight">
+          <span className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-brand-400 to-brand-600">
+            <Landmark size={16} aria-hidden="true" />
+          </span>
+          City-Co
+        </span>
+        <button
+          type="button"
+          aria-label="Ouvrir le menu"
+          aria-expanded={open}
+          onClick={() => setOpen(true)}
+          className="grid size-10 place-items-center rounded-lg hover:bg-white/10"
+        >
+          <Menu size={22} aria-hidden="true" />
+        </button>
+      </header>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {items.map(({ href, label, icon: Icon }) => {
-          const active =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                active
-                  ? "bg-white/10 text-white"
-                  : "text-gray-400 hover:bg-white/5 hover:text-white",
-              )}
-            >
-              <Icon size={18} />
-              {label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="px-3 py-4 border-t border-gray-800">
-        <form action={logout}>
+      {open && (
+        <div className="fixed inset-0 z-40 md:hidden">
           <button
-            type="submit"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-white transition-colors w-full"
-          >
-            <LogOut size={18} />
-            Déconnexion
-          </button>
-        </form>
-      </div>
-    </aside>
+            type="button"
+            aria-label="Fermer le menu"
+            onClick={() => setOpen(false)}
+            className="absolute inset-0 bg-slate-950/60"
+          />
+          <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] shadow-2xl">
+            <SidebarContent
+              staff={staff}
+              managedCommune={managedCommune}
+              onNavigate={() => setOpen(false)}
+            />
+            <button
+              type="button"
+              aria-label="Fermer le menu"
+              onClick={() => setOpen(false)}
+              className="absolute right-3 top-4 grid size-9 place-items-center rounded-lg text-brand-200 hover:bg-white/10"
+            >
+              <X size={20} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <aside className="hidden w-64 shrink-0 md:sticky md:top-0 md:block md:h-screen">
+        <SidebarContent
+          staff={staff}
+          managedCommune={managedCommune}
+          onNavigate={() => undefined}
+        />
+      </aside>
+    </>
   );
 }
