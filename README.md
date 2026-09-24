@@ -27,6 +27,10 @@ Tests : `npm test` ; contrôle du code : `npm run lint` ; build de production : 
 - **Services** : durée d'un rendez-vous et agents qui reçoivent sur ce service. Sans agent affilié, aucun créneau n'est proposé aux citoyens.
 - **Rendez-vous** : liste avec date, heure (fuseau Paris) et agent, filtres par service et par jour.
 
+## Mot de passe oublié
+
+La page de connexion propose « Mot de passe oublié ? » : l'agent saisit son adresse e-mail et reçoit, à l'adresse enregistrée dans le logiciel, un lien valable 1 heure et à usage unique vers `/reset-password`. La réponse est la même que le compte existe ou non. Après le changement, les sessions ouvertes sont fermées et la personne est renvoyée vers la connexion. En local, les e-mails arrivent dans Mailpit (`http://localhost:8025`, voir le `docker-compose.yml` de civic_api). Les trois pages d'accès (`/login`, `/forgot-password`, `/reset-password`) sont publiques dans `src/proxy.ts`.
+
 ## Tableau de bord
 
 La page d'accueil se lit d'un coup d'œil : un bandeau résume ce qui attend une réponse, puis chaque bloc répond à une question en langage clair. Les chiffres portent sur 7, 30 ou 90 jours (`?period=`) et sont comparés à la période précédente.
