@@ -157,3 +157,69 @@ export type Report = {
   createdAt: string;
   citizen: { email: string };
 };
+
+export type StatsPeriodDays = 7 | 30 | 90;
+
+export type Trend = { current: number; previous: number };
+
+export type DailyCount = { date: string; count: number };
+
+export type DelayStats = {
+  answered: number;
+  medianMinutes: number | null;
+  meanMinutes: number | null;
+};
+
+export type DelayTrend = { current: DelayStats; previous: DelayStats };
+
+export type CitizenStats = {
+  total: number;
+  commercants: number;
+  arrivals: Trend;
+  arrivalsByDay: DailyCount[];
+};
+
+export type ArticleStats = {
+  published: number;
+  reads: Trend;
+  readsByDay: DailyCount[];
+  mostRead: { id: string; title: string; reads: number }[];
+};
+
+export type PollParticipation = {
+  id: string;
+  question: string;
+  isActive: boolean;
+  closesAt: string | null;
+  votes: number;
+  eligibleVoters: number;
+  participationRate: number | null;
+};
+
+export type AppointmentStats = {
+  pending: number;
+  oldestPendingSince: string | null;
+  received: Trend;
+  responseDelay: DelayTrend;
+};
+
+export type ReportStats = {
+  backlog: {
+    new: number;
+    inProgress: number;
+    oldestNewSince: string | null;
+  };
+  received: Trend;
+  byCategory: { category: ReportCategory; count: number }[];
+  responseDelay: DelayTrend;
+};
+
+export type StatsOverview = {
+  period: { days: StatsPeriodDays; from: string; to: string };
+  scope: "commune" | "agent";
+  appointments: AppointmentStats;
+  reports: ReportStats;
+  citizens?: CitizenStats;
+  articles?: ArticleStats;
+  polls?: PollParticipation[];
+};

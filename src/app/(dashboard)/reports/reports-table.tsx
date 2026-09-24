@@ -12,15 +12,8 @@ import {
 } from "@/components/ui/table";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import type { Report, ReportCategory, ReportStatus } from "@/lib/types";
-
-const categoryLabels: Record<ReportCategory, string> = {
-  VOIRIE: "Voirie",
-  ECLAIRAGE: "Éclairage",
-  PROPRETE: "Propreté",
-  ESPACES_VERTS: "Espaces verts",
-  AUTRE: "Autre",
-};
+import { reportCategoryLabels } from "@/lib/report-labels";
+import type { Report, ReportStatus } from "@/lib/types";
 
 const statusLabels: Record<ReportStatus, string> = {
   NOUVEAU: "Nouveau",
@@ -105,7 +98,7 @@ export function ReportsTable({ reports }: { reports: Report[] }) {
             </TableCell>
             <TableCell>
               <Badge variant="outline">
-                {categoryLabels[report.category]}
+                {reportCategoryLabels[report.category]}
               </Badge>
             </TableCell>
             <TableCell className="text-sm text-gray-500 max-w-[200px] truncate">
