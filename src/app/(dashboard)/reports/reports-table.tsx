@@ -117,6 +117,7 @@ export function ReportsTable({ reports }: { reports: Report[] }) {
             <TableCell>
               {report.imageUrl ? (
                 <a href={report.imageUrl} target="_blank" rel="noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- miniature d'une image hébergée par civic_api, pas d'optimisation Next.js nécessaire. */}
                   <img
                     src={report.imageUrl}
                     alt="Photo du signalement"

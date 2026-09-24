@@ -1,37 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# admin_civic
 
-## Getting Started
+Dashboard du personnel municipal de City-Co (Next.js 16, React 19, Tailwind, shadcn/ui). Il pilote `civic_api` : actualitÃ©s, sondages, services, commerÃ§ants, signalements, rendez-vous, agenda des agents, comptes du personnel et, pour un super-administrateur, les communes.
 
-First, run the development server:
+## DÃ©marrage local
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local     # API_URL=http://localhost:4000
+npm install
+npm run dev                    # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`civic_api` doit tourner (voir son README). Connexion de dÃ©mo : `superadmin@city-co.dev` / `ChangeMe123!` (crÃ©Ã© par le seed de l'API, dev local uniquement).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Tests : `npm test` ; contrÃ´le du code : `npm run lint` ; build de production : `npm run build`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Fonctionnement
 
-## Learn More
+- **Aucune logique d'autorisation ici** : les Server Actions (`src/app/actions/`) relaient les appels Ã  `civic_api`, qui dÃ©cide seule des droits et du cloisonnement par commune. Le jeton est dans un cookie `httpOnly`.
+- `proxy.ts` ne fait qu'un contrÃ´le de prÃ©sence du cookie ; `(dashboard)/layout.tsx` revalide le jeton auprÃ¨s de l'API avant d'afficher quoi que ce soit.
+- Un **super-administrateur** choisit la commune qu'il gÃ¨re Ã  distance depuis Â« Communes Â» ; les autres rÃ´les sont limitÃ©s Ã  la leur.
+- Les rÃ´les conditionnent le menu : les agents ne voient ni Â« Agents Â» ni Â« ParamÃ¨tres Â».
 
-To learn more about Next.js, take a look at the following resources:
+## Agenda et rendez-vous
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Agenda** : grille hebdomadaire heure par heure d'un agent (chacun gÃ¨re le sien, un administrateur choisit l'agent). Disponible, Indisponible ou RÃ©tablir Ã  la semaine, au jour, Ã  la demi-journÃ©e ou Ã  l'heure ; les horaires habituels se rÃ¨glent en dessous.
+- **Services** : durÃ©e d'un rendez-vous et agents qui reÃ§oivent sur ce service. Sans agent affiliÃ©, aucun crÃ©neau n'est proposÃ© aux citoyens.
+- **Rendez-vous** : liste avec date, heure (fuseau Paris) et agent, filtres par service et par jour.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Structure
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# admin_civic_application
+```
+src/app/(dashboard)/   pages du tableau de bord (un dossier par domaine)
+src/app/actions/       Server Actions, un fichier par domaine
+src/lib/api/           client HTTP vers civic_api
+src/lib/session.ts     membre du personnel connectÃ©, commune gÃ©rÃ©e
+src/lib/paris-time.ts  dates et heures en fuseau Europe/Paris
+src/components/ui/     composants shadcn/ui
+```

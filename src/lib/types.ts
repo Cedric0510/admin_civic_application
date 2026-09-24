@@ -1,5 +1,3 @@
-// Champs en camelCase : ce type reflète maintenant la réponse JSON de
-// civic_api (Prisma), plus les anciennes colonnes snake_case de Supabase.
 export type Article = {
   id: string;
   title: string;
@@ -102,9 +100,6 @@ export type AgendaWeek = {
   }[];
 };
 
-// id supprimé : c'était l'ancien identifiant Supabase de la ligne unique
-// "settings" (toujours 1), sans équivalent côté civic_api (Commune.id est
-// un UUID, non exposé ici puisque non utilisé par le formulaire).
 export type CitySettings = {
   village_name: string;
 };
