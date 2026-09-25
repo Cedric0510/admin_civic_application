@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { getServiceAgents, getService } from "@/app/actions/services";
 import { getStaff } from "@/app/actions/staff";
 import { getCurrentStaff } from "@/lib/session";
+import { PageHeader } from "@/components/layout/page-header";
+import { Panel } from "@/components/layout/panel";
 import { ServiceForm } from "../../service-form";
 import { ServiceAgentsSection } from "../../service-agents-section";
 
@@ -30,19 +32,26 @@ export default async function EditServicePage({
     null;
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900">
-        Modifier le service
-      </h1>
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+    <div className="max-w-2xl space-y-6">
+      <PageHeader
+        title="Modifier le service"
+        backHref="/services"
+        backLabel="Services"
+      />
+      <Panel>
         <ServiceForm service={service} />
+      </Panel>
+      <Panel
+        title="Agents qui reçoivent sur ce service"
+        description="Les habitants ne peuvent réserver que sur les créneaux libres de ces agents."
+      >
         <ServiceAgentsSection
           key={affiliated.map((agent) => agent.id).join(",")}
           serviceId={service.id}
           affiliated={affiliated}
           candidates={candidates}
         />
-      </div>
+      </Panel>
     </div>
   );
 }

@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getAgendaWeek } from "@/app/actions/agenda";
 import { getStaff } from "@/app/actions/staff";
+import { PageHeader } from "@/components/layout/page-header";
+import { Panel } from "@/components/layout/panel";
 import { buttonVariants } from "@/components/ui/button";
 import { getCurrentStaff } from "@/lib/session";
 import {
@@ -43,12 +45,10 @@ export default async function AgendaPage({
 
   if (!agentId) {
     return (
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
-        <p className="text-sm text-gray-500">
-          Aucun agent dans cette commune : créez-en un depuis la page Agents.
-        </p>
-      </div>
+      <PageHeader
+        title="Agenda"
+        description="Aucun agent dans cette commune : créez-en un depuis la page Agents."
+      />
     );
   }
 
@@ -58,15 +58,10 @@ export default async function AgendaPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Les citoyens ne peuvent réserver que les créneaux disponibles des
-            agents affiliés au service (voir la page Services).
-          </p>
-        </div>
-
+      <PageHeader
+        title="Agenda"
+        description="Les habitants ne peuvent réserver que les créneaux disponibles des agents affiliés au service (voir la page Services)."
+        actions={
         <div className="flex items-center gap-2">
           <Link
             href={agendaHref(addDays(weekStart, -7), agentId, isSelf)}
@@ -75,7 +70,7 @@ export default async function AgendaPage({
           >
             <ChevronLeft size={16} />
           </Link>
-          <span className="min-w-40 text-center text-sm font-medium text-gray-700">
+          <span className="min-w-40 text-center text-sm font-medium text-foreground">
             Du {formatDayMonth(weekStart)} au{" "}
             {formatDayMonth(addDays(weekStart, 6))}
           </span>
@@ -93,7 +88,8 @@ export default async function AgendaPage({
             Aujourd&apos;hui
           </Link>
         </div>
-      </div>
+        }
+      />
 
       {members.length > 1 && (
         <div className="flex flex-wrap gap-2">
@@ -114,29 +110,20 @@ export default async function AgendaPage({
         </div>
       )}
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <Panel>
         <AgendaGrid key={`${agentId}-${weekStart}`} week={view} />
-      </div>
+      </Panel>
 
-      <section className="space-y-3">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">
-            Horaires habituels
-          </h2>
-          <p className="text-sm text-gray-500">
-            Créneaux proposés par défaut chaque semaine, entre 6h et 22h. Les
-            exceptions ci-dessus (absence, télétravail, ouverture ponctuelle)
-            s&apos;appliquent par-dessus.
-          </p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <WorkingHoursForm
-            key={agentId}
-            staffMemberId={agentId}
-            workingHours={view.workingHours}
-          />
-        </div>
-      </section>
+      <Panel
+        title="Horaires habituels"
+        description="Créneaux proposés par défaut chaque semaine, entre 6h et 22h. Les exceptions ci-dessus (absence, télétravail, ouverture ponctuelle) s'appliquent par-dessus."
+      >
+        <WorkingHoursForm
+          key={agentId}
+          staffMemberId={agentId}
+          workingHours={view.workingHours}
+        />
+      </Panel>
     </div>
   );
 }

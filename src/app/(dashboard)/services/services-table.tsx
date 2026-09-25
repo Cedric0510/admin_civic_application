@@ -1,8 +1,10 @@
 "use client";
 
 import { deleteService } from "@/app/actions/services";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/layout/empty-state";
+import { ConfirmDeleteButton, IconLink } from "@/components/layout/row-actions";
 import {
   Table,
   TableBody,
@@ -11,26 +13,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Building2, Pencil } from "lucide-react";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import type { Service } from "@/lib/types";
 
 export function ServicesTable({ services }: { services: Service[] }) {
   const [pending, startTransition] = useTransition();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function handleDelete(id: string) {
-    setDeletingId(null);
     startTransition(async () => {
       try {
         await deleteService(id);
@@ -43,9 +35,16 @@ export function ServicesTable({ services }: { services: Service[] }) {
 
   if (services.length === 0) {
     return (
-      <p className="text-center text-gray-500 py-12 text-sm">
-        Aucun service municipal.
-      </p>
+      <EmptyState
+        icon={Building2}
+        title="Aucun service municipal"
+        description="Ajoutez les services de la mairie pour que les habitants les retrouvent et prennent rendez-vous."
+        action={
+          <Link href="/services/new" className={buttonVariants()}>
+            Nouveau service
+          </Link>
+        }
+      />
     );
   }
 
@@ -56,7 +55,7 @@ export function ServicesTable({ services }: { services: Service[] }) {
           <TableHead>Nom</TableHead>
           <TableHead>Catégorie</TableHead>
           <TableHead>Téléphone</TableHead>
-          <TableHead className="w-24 text-right">Actions</TableHead>
+          <TableHead className="w-28 text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -67,57 +66,26 @@ export function ServicesTable({ services }: { services: Service[] }) {
               {service.category ? (
                 <Badge variant="outline">{service.category}</Badge>
               ) : (
-                <span className="text-gray-400 text-sm">—</span>
+                <span className="text-sm text-muted-foreground">—</span>
               )}
             </TableCell>
-            <TableCell className="text-sm text-gray-500">
+            <TableCell className="text-sm text-muted-foreground">
               {service.phone ?? "—"}
             </TableCell>
             <TableCell className="text-right">
-              <div className="flex justify-end gap-2">
-                <Link
+              <div className="flex justify-end gap-1">
+                <IconLink
                   href={`/services/${service.id}/edit`}
-                  className={buttonVariants({ variant: "ghost", size: "icon" })}
-                >
-                  <Pencil size={16} />
-                </Link>
-                <Dialog
-                  open={deletingId === service.id}
-                  onOpenChange={(open) =>
-                    setDeletingId(open ? service.id : null)
-                  }
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setDeletingId(service.id)}
-                  >
-                    <Trash2 size={16} className="text-red-500" />
-                  </Button>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Supprimer le service ?</DialogTitle>
-                      <DialogDescription>
-                        &quot;{service.name}&quot; sera définitivement supprimé.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => setDeletingId(null)}
-                      >
-                        Annuler
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        disabled={pending}
-                        onClick={() => handleDelete(service.id)}
-                      >
-                        Supprimer
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                  label={`Modifier ${service.name}`}
+                  icon={Pencil}
+                />
+                <ConfirmDeleteButton
+                  label={`Supprimer ${service.name}`}
+                  title="Supprimer le service ?"
+                  description={`« ${service.name} » sera définitivement supprimé.`}
+                  pending={pending}
+                  onConfirm={() => handleDelete(service.id)}
+                />
               </div>
             </TableCell>
           </TableRow>

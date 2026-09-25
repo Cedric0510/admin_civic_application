@@ -2,6 +2,10 @@
 
 import { updateReportStatus } from "@/app/actions/reports";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/layout/empty-state";
+import { StatusBadge } from "@/components/layout/status-badge";
+import { StatusSelect } from "@/components/layout/status-select";
+import type { Tone } from "@/components/stats/tone";
 import {
   Table,
   TableBody,
@@ -10,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Megaphone } from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { reportCategoryLabels } from "@/lib/report-labels";
@@ -21,16 +26,11 @@ const statusLabels: Record<ReportStatus, string> = {
   TRAITE: "Traité",
 };
 
-const statusBadgeVariant: Record<
-  ReportStatus,
-  "destructive" | "secondary" | "outline"
-> = {
-  NOUVEAU: "destructive",
-  EN_COURS: "secondary",
-  TRAITE: "outline",
+const statusTones: Record<ReportStatus, Tone> = {
+  NOUVEAU: "warn",
+  EN_COURS: "brand",
+  TRAITE: "good",
 };
-
-const statusOptions: ReportStatus[] = ["NOUVEAU", "EN_COURS", "TRAITE"];
 
 export function ReportsTable({ reports }: { reports: Report[] }) {
   const [pending, startTransition] = useTransition();
@@ -50,9 +50,11 @@ export function ReportsTable({ reports }: { reports: Report[] }) {
 
   if (reports.length === 0) {
     return (
-      <p className="text-center text-gray-500 py-12 text-sm">
-        Aucun signalement.
-      </p>
+      <EmptyState
+        icon={Megaphone}
+        title="Aucun signalement"
+        description="Les problèmes signalés par les habitants depuis l'application apparaîtront ici."
+      />
     );
   }
 
@@ -65,7 +67,7 @@ export function ReportsTable({ reports }: { reports: Report[] }) {
           <TableHead>Adresse</TableHead>
           <TableHead>Description</TableHead>
           <TableHead>Photo</TableHead>
-          <TableHead>Citoyen</TableHead>
+          <TableHead>Habitant</TableHead>
           <TableHead>Reçu le</TableHead>
         </TableRow>
       </TableHeader>
@@ -74,26 +76,16 @@ export function ReportsTable({ reports }: { reports: Report[] }) {
           <TableRow key={report.id}>
             <TableCell>
               <div className="flex items-center gap-2">
-                <Badge variant={statusBadgeVariant[report.status]}>
+                <StatusBadge tone={statusTones[report.status]}>
                   {statusLabels[report.status]}
-                </Badge>
-                <select
+                </StatusBadge>
+                <StatusSelect
                   value={report.status}
+                  options={statusLabels}
+                  label={`Statut du signalement : ${report.address}`}
                   disabled={pending}
-                  onChange={(e) =>
-                    handleStatusChange(
-                      report.id,
-                      e.target.value as ReportStatus,
-                    )
-                  }
-                  className="h-8 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                >
-                  {statusOptions.map((status) => (
-                    <option key={status} value={status}>
-                      {statusLabels[status]}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(status) => handleStatusChange(report.id, status)}
+                />
               </div>
             </TableCell>
             <TableCell>
@@ -101,10 +93,16 @@ export function ReportsTable({ reports }: { reports: Report[] }) {
                 {reportCategoryLabels[report.category]}
               </Badge>
             </TableCell>
-            <TableCell className="text-sm text-gray-500 max-w-[200px] truncate">
+            <TableCell
+              title={report.address}
+              className="max-w-[200px] truncate text-sm text-muted-foreground"
+            >
               {report.address}
             </TableCell>
-            <TableCell className="text-sm text-gray-500 max-w-xs truncate">
+            <TableCell
+              title={report.description}
+              className="max-w-xs truncate text-sm text-muted-foreground"
+            >
               {report.description}
             </TableCell>
             <TableCell>
@@ -114,17 +112,17 @@ export function ReportsTable({ reports }: { reports: Report[] }) {
                   <img
                     src={report.imageUrl}
                     alt="Photo du signalement"
-                    className="h-10 w-10 rounded-md object-cover border border-gray-200"
+                    className="size-10 rounded-lg border border-border object-cover"
                   />
                 </a>
               ) : (
-                <span className="text-sm text-gray-400">—</span>
+                <span className="text-sm text-muted-foreground">—</span>
               )}
             </TableCell>
-            <TableCell className="text-sm text-gray-500">
+            <TableCell className="text-sm text-muted-foreground">
               {report.citizen.email}
             </TableCell>
-            <TableCell className="text-sm text-gray-500">
+            <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
               {new Date(report.createdAt).toLocaleString("fr-FR", {
                 day: "2-digit",
                 month: "short",

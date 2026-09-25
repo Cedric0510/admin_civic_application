@@ -1,8 +1,9 @@
 "use client";
 
 import { deleteArticle } from "@/app/actions/articles";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/layout/empty-state";
+import { ConfirmDeleteButton, IconLink } from "@/components/layout/row-actions";
 import {
   Table,
   TableBody,
@@ -11,17 +12,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Newspaper, Pencil } from "lucide-react";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { buttonVariants } from "@/components/ui/button";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import type { Article } from "@/lib/types";
 
@@ -31,10 +25,8 @@ export function ArticlesTable({
   articles: Pick<Article, "id" | "title" | "category" | "publishedAt">[];
 }) {
   const [pending, startTransition] = useTransition();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function handleDelete(id: string) {
-    setDeletingId(null);
     startTransition(async () => {
       try {
         await deleteArticle(id);
@@ -47,9 +39,16 @@ export function ArticlesTable({
 
   if (articles.length === 0) {
     return (
-      <p className="text-center text-gray-500 py-12 text-sm">
-        Aucun article publié.
-      </p>
+      <EmptyState
+        icon={Newspaper}
+        title="Aucun article publié"
+        description="Publiez une première actualité pour informer les habitants."
+        action={
+          <Link href="/articles/new" className={buttonVariants()}>
+            Nouvel article
+          </Link>
+        }
+      />
     );
   }
 
@@ -59,8 +58,8 @@ export function ArticlesTable({
         <TableRow>
           <TableHead>Titre</TableHead>
           <TableHead>Catégorie</TableHead>
-          <TableHead>Date de publication</TableHead>
-          <TableHead className="w-24 text-right">Actions</TableHead>
+          <TableHead>Publié le</TableHead>
+          <TableHead className="w-28 text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -71,10 +70,10 @@ export function ArticlesTable({
               {article.category ? (
                 <Badge variant="outline">{article.category}</Badge>
               ) : (
-                <span className="text-gray-400 text-sm">—</span>
+                <span className="text-sm text-muted-foreground">—</span>
               )}
             </TableCell>
-            <TableCell className="text-gray-500 text-sm">
+            <TableCell className="text-sm text-muted-foreground">
               {new Date(article.publishedAt).toLocaleDateString("fr-FR", {
                 day: "2-digit",
                 month: "long",
@@ -82,52 +81,19 @@ export function ArticlesTable({
               })}
             </TableCell>
             <TableCell className="text-right">
-              <div className="flex justify-end gap-2">
-                <Link
+              <div className="flex justify-end gap-1">
+                <IconLink
                   href={`/articles/${article.id}/edit`}
-                  className={buttonVariants({ variant: "ghost", size: "icon" })}
-                >
-                  <Pencil size={16} />
-                </Link>
-
-                <Dialog
-                  open={deletingId === article.id}
-                  onOpenChange={(open) =>
-                    setDeletingId(open ? article.id : null)
-                  }
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setDeletingId(article.id)}
-                  >
-                    <Trash2 size={16} className="text-red-500" />
-                  </Button>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Supprimer l&apos;article ?</DialogTitle>
-                      <DialogDescription>
-                        &quot;{article.title}&quot; sera définitivement
-                        supprimé. Cette action est irréversible.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => setDeletingId(null)}
-                      >
-                        Annuler
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        disabled={pending}
-                        onClick={() => handleDelete(article.id)}
-                      >
-                        Supprimer
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                  label={`Modifier ${article.title}`}
+                  icon={Pencil}
+                />
+                <ConfirmDeleteButton
+                  label={`Supprimer ${article.title}`}
+                  title="Supprimer l'article ?"
+                  description={`« ${article.title} » sera définitivement supprimé. Cette action est irréversible.`}
+                  pending={pending}
+                  onConfirm={() => handleDelete(article.id)}
+                />
               </div>
             </TableCell>
           </TableRow>

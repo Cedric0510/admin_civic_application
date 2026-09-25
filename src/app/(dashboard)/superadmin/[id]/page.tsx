@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getCommunes } from "@/app/actions/superadmin";
+import { PageHeader } from "@/components/layout/page-header";
 import { ModulesForm } from "./modules-form";
 import { SuspensionCard } from "./suspension-card";
 
@@ -16,27 +15,15 @@ export default async function CommuneAccessPage({
 
   return (
     <div className="max-w-3xl space-y-8">
-      <div className="space-y-3">
-        <Link
-          href="/superadmin"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700"
-        >
-          <ArrowLeft size={14} aria-hidden="true" />
-          Toutes les communes
-        </Link>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-            {commune.name}
-          </h1>
-          <p className="text-sm text-slate-500">
-            Accès au dashboard et fonctionnalités de la commune (
-            {commune.slug}).
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title={commune.name}
+        description={`Accès au dashboard et fonctionnalités de la commune (${commune.slug}).`}
+        backHref="/superadmin"
+        backLabel="Toutes les communes"
+      />
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-900">Accès</h2>
+        <h2 className="text-lg font-semibold text-foreground">Accès</h2>
         <SuspensionCard
           communeId={commune.id}
           communeName={commune.name}
@@ -46,8 +33,8 @@ export default async function CommuneAccessPage({
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Modules</h2>
-          <p className="text-sm text-slate-500">
+          <h2 className="text-lg font-semibold text-foreground">Modules</h2>
+          <p className="text-sm text-muted-foreground">
             Un module désactivé disparaît du dashboard et de l&apos;application
             des habitants. Les données sont conservées et reviennent dès la
             réactivation.

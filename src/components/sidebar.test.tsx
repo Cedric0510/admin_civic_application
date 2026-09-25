@@ -26,6 +26,7 @@ describe("Sidebar", () => {
     expect(screen.getByRole("link", { name: "Tableau de bord" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Signalements" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Agents" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Retours" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Paramètres" })).not.toBeInTheDocument();
     expect(screen.queryByText("Administration")).not.toBeInTheDocument();
   });
@@ -35,6 +36,7 @@ describe("Sidebar", () => {
       <Sidebar staff={staff("ADMINISTRATEUR")} managedCommune={null} />,
     );
     expect(screen.getByRole("link", { name: "Agents" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Retours" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Paramètres" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Communes" })).not.toBeInTheDocument();
     unmount();

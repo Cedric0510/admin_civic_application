@@ -2,9 +2,10 @@
 
 import { createCommerce, updateCommerce } from "@/app/actions/commerces";
 import { uploadImage } from "@/app/actions/uploads";
-import { Button } from "@/components/ui/button";
+import { Field } from "@/components/layout/field";
+import { FormActions } from "@/components/layout/form-actions";
+import { ImageUploadField } from "@/components/layout/image-upload-field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
@@ -20,8 +21,6 @@ export function CommerceForm({ commerce }: { commerce?: Commerce }) {
       try {
         const imageFile = formData.get("image_file") as File | null;
         formData.delete("image_file");
-        // Pas de nouveau fichier choisi : on ne fixe pas image_url du tout —
-        // civic_api (PATCH) laisse alors la valeur existante inchangée.
         if (imageFile && imageFile.size > 0) {
           const url = await uploadImage(imageFile);
           formData.set("image_url", url);
@@ -43,119 +42,74 @@ export function CommerceForm({ commerce }: { commerce?: Commerce }) {
   }
 
   return (
-    <form action={handleSubmit} className="space-y-4">
-      <div className="space-y-1">
-        <Label htmlFor="name">Nom du commerce *</Label>
-        <Input id="name" name="name" defaultValue={commerce?.name} required />
-      </div>
+    <form action={handleSubmit} className="space-y-5">
+      <Field label="Nom du commerce *" id="name">
+        <Input name="name" defaultValue={commerce?.name} required />
+      </Field>
 
-      <div className="space-y-1">
-        <Label htmlFor="category">Catégorie</Label>
+      <Field label="Catégorie" id="category">
         <Input
-          id="category"
           name="category"
           defaultValue={commerce?.category ?? ""}
           placeholder="ex. Alimentation, Maison, Services, Santé…"
         />
-      </div>
+      </Field>
 
-      <div className="space-y-1">
-        <Label htmlFor="description">Description</Label>
+      <Field label="Description" id="description">
         <Textarea
-          id="description"
           name="description"
           rows={3}
           defaultValue={commerce?.description ?? ""}
         />
+      </Field>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Téléphone" id="phone">
+          <Input name="phone" type="tel" defaultValue={commerce?.phone ?? ""} />
+        </Field>
+        <Field label="Email" id="email">
+          <Input name="email" type="email" defaultValue={commerce?.email ?? ""} />
+        </Field>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <Label htmlFor="phone">Téléphone</Label>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Horaires" id="hours">
           <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            defaultValue={commerce?.phone ?? ""}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            defaultValue={commerce?.email ?? ""}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <Label htmlFor="hours">Horaires</Label>
-          <Input
-            id="hours"
             name="hours"
             defaultValue={commerce?.hours ?? ""}
             placeholder="ex. Lun-Sam 7h-19h"
           />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="address">Adresse</Label>
-          <Input
-            id="address"
-            name="address"
-            defaultValue={commerce?.address ?? ""}
-          />
-        </div>
+        </Field>
+        <Field label="Adresse" id="address">
+          <Input name="address" defaultValue={commerce?.address ?? ""} />
+        </Field>
       </div>
 
-      <div className="space-y-1">
-        <Label htmlFor="notes">Notes (visible publiquement)</Label>
+      <Field
+        label="Notes (visibles publiquement)"
+        id="notes"
+        hint="Affichées sur la fiche publique du commerce : congés, promotions, actualités. À tenir à jour."
+      >
         <Textarea
-          id="notes"
           name="notes"
           rows={2}
           defaultValue={commerce?.notes ?? ""}
           placeholder="ex. Congés annuels du 12 au 25 juillet, promotion du moment…"
         />
-        <p className="text-xs text-gray-500">
-          Affiché sur la fiche publique du commerce — à tenir à jour (congés,
-          promotions, actualités).
-        </p>
-      </div>
+      </Field>
 
-      <div className="space-y-1">
-        <Label htmlFor="image_file">Photo (optionnel)</Label>
-        {commerce?.imageUrl && (
-          // eslint-disable-next-line @next/next/no-img-element -- aperçu d'une image hébergée par civic_api, pas d'optimisation Next.js nécessaire ici.
-          <img
-            src={commerce.imageUrl}
-            alt=""
-            className="mb-2 h-24 w-auto rounded-md object-cover"
-          />
-        )}
-        <Input
-          id="image_file"
-          name="image_file"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-        />
-        <p className="text-xs text-gray-500">
-          {commerce?.imageUrl
-            ? "Laisser vide pour conserver l'image actuelle."
-            : "JPEG, PNG ou WebP, 5 Mo maximum."}
-        </p>
-      </div>
+      <ImageUploadField
+        label="Photo (facultative)"
+        currentUrl={commerce?.imageUrl}
+        currentAlt="Photo actuelle du commerce"
+      />
 
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Sauvegarde…" : commerce ? "Enregistrer" : "Créer"}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => history.back()}>
-          Annuler
-        </Button>
-      </div>
+      <FormActions
+        pending={pending}
+        submitLabel={commerce ? "Enregistrer" : "Créer"}
+        pendingLabel="Sauvegarde…"
+        onCancel={() => history.back()}
+      />
     </form>
   );
 }

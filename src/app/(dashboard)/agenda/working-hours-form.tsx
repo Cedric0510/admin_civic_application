@@ -20,7 +20,7 @@ const HOUR_CHOICES = Array.from({ length: 17 }, (_, index) => index + 6);
 const NEW_RANGE = { startHour: 9, endHour: 12 };
 
 const selectClass =
-  "h-8 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
+  "h-9 rounded-lg border border-input bg-card px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 export function WorkingHoursForm({
   staffMemberId,
@@ -59,7 +59,7 @@ export function WorkingHoursForm({
         {WEEKDAYS.map(({ weekday, label }) => {
           const dayRanges = ranges.filter((range) => range.weekday === weekday);
           return (
-            <div key={weekday} className="rounded-lg border border-gray-200 p-3">
+            <div key={weekday} className="rounded-lg border border-border p-3">
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-sm font-medium text-gray-800">{label}</p>
                 <Button
@@ -78,7 +78,7 @@ export function WorkingHoursForm({
                 </Button>
               </div>
               {dayRanges.length === 0 ? (
-                <p className="text-xs text-gray-400">Pas de rendez-vous.</p>
+                <p className="text-xs text-muted-foreground">Pas de rendez-vous.</p>
               ) : (
                 <ul className="space-y-2">
                   {dayRanges.map((range, index) => (

@@ -1,10 +1,9 @@
 "use client";
 
 import { provisionCommune } from "@/app/actions/superadmin";
-import { Button } from "@/components/ui/button";
+import { Field } from "@/components/layout/field";
+import { FormActions } from "@/components/layout/form-actions";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -20,9 +19,6 @@ export function CommuneProvisionForm() {
         toast.success("Commune et compte administrateur créés.");
         router.push("/superadmin");
       } catch (error) {
-        // Message potentiellement long ici (cf. provisionCommune) -- un
-        // échec partiel (commune créée, admin non créé) doit être visible,
-        // pas remplacé par un message générique.
         toast.error(
           error instanceof Error ? error.message : "Une erreur est survenue.",
         );
@@ -32,77 +28,60 @@ export function CommuneProvisionForm() {
 
   return (
     <form action={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <h2 className="text-sm font-semibold text-gray-700">Commune</h2>
-        <div className="space-y-1">
-          <Label htmlFor="communeName">Nom *</Label>
-          <Input id="communeName" name="communeName" placeholder="Bessan" required />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="communeSlug">Identifiant (slug) *</Label>
+      <fieldset className="space-y-5">
+        <legend className="mb-4 text-sm font-semibold text-foreground">
+          Commune
+        </legend>
+        <Field label="Nom *" id="communeName">
+          <Input name="communeName" placeholder="Bessan" required />
+        </Field>
+        <Field
+          label="Identifiant (slug) *"
+          id="communeSlug"
+          hint="Minuscules, chiffres et tirets uniquement. Utilisé par l'application mobile pour identifier la commune."
+        >
           <Input
-            id="communeSlug"
             name="communeSlug"
             placeholder="bessan"
             pattern="[a-z0-9]+(-[a-z0-9]+)*"
             title="Minuscules, chiffres et tirets uniquement (ex. ma-commune)."
             required
           />
-          <p className="text-xs text-gray-500">
-            Minuscules, chiffres et tirets uniquement -- utilisé par
-            l&apos;app mobile pour identifier la commune.
-          </p>
-        </div>
-      </div>
+        </Field>
+      </fieldset>
 
-      <Separator />
-
-      <div className="space-y-4">
-        <h2 className="text-sm font-semibold text-gray-700">
+      <fieldset className="space-y-5 border-t border-border pt-6">
+        <legend className="mb-4 text-sm font-semibold text-foreground">
           Premier compte administrateur
-        </h2>
-        <div className="space-y-1">
-          <Label htmlFor="adminName">Nom *</Label>
+        </legend>
+        <Field label="Nom *" id="adminName">
           <Input
-            id="adminName"
             name="adminName"
             placeholder="Marie Durand"
             minLength={2}
             maxLength={100}
             required
           />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="adminEmail">Email *</Label>
+        </Field>
+        <Field label="Email *" id="adminEmail">
           <Input
-            id="adminEmail"
             name="adminEmail"
             type="email"
             placeholder="mairie@bessan.fr"
             required
           />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="adminPassword">Mot de passe *</Label>
-          <Input
-            id="adminPassword"
-            name="adminPassword"
-            type="password"
-            minLength={8}
-            required
-          />
-          <p className="text-xs text-gray-500">8 caractères minimum.</p>
-        </div>
-      </div>
+        </Field>
+        <Field label="Mot de passe *" id="adminPassword" hint="8 caractères minimum.">
+          <Input name="adminPassword" type="password" minLength={8} required />
+        </Field>
+      </fieldset>
 
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Création…" : "Provisionner"}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => router.back()}>
-          Annuler
-        </Button>
-      </div>
+      <FormActions
+        pending={pending}
+        submitLabel="Provisionner"
+        pendingLabel="Création…"
+        onCancel={() => router.back()}
+      />
     </form>
   );
 }

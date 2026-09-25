@@ -1,8 +1,10 @@
 "use client";
 
 import { deleteCommerce } from "@/app/actions/commerces";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/layout/empty-state";
+import { ConfirmDeleteButton, IconLink } from "@/components/layout/row-actions";
 import {
   Table,
   TableBody,
@@ -11,26 +13,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Store } from "lucide-react";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import type { Commerce } from "@/lib/types";
 
 export function CommercesTable({ commerces }: { commerces: Commerce[] }) {
   const [pending, startTransition] = useTransition();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function handleDelete(id: string) {
-    setDeletingId(null);
     startTransition(async () => {
       try {
         await deleteCommerce(id);
@@ -43,9 +35,16 @@ export function CommercesTable({ commerces }: { commerces: Commerce[] }) {
 
   if (commerces.length === 0) {
     return (
-      <p className="text-center text-gray-500 py-12 text-sm">
-        Aucun commerce.
-      </p>
+      <EmptyState
+        icon={Store}
+        title="Aucun commerce"
+        description="Référencez les commerces de la commune pour les faire connaître aux habitants."
+        action={
+          <Link href="/commerces/new" className={buttonVariants()}>
+            Nouveau commerce
+          </Link>
+        }
+      />
     );
   }
 
@@ -57,7 +56,7 @@ export function CommercesTable({ commerces }: { commerces: Commerce[] }) {
           <TableHead>Catégorie</TableHead>
           <TableHead>Téléphone</TableHead>
           <TableHead>Notes</TableHead>
-          <TableHead className="w-24 text-right">Actions</TableHead>
+          <TableHead className="w-28 text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -68,61 +67,29 @@ export function CommercesTable({ commerces }: { commerces: Commerce[] }) {
               {commerce.category ? (
                 <Badge variant="outline">{commerce.category}</Badge>
               ) : (
-                <span className="text-gray-400 text-sm">—</span>
+                <span className="text-sm text-muted-foreground">—</span>
               )}
             </TableCell>
-            <TableCell className="text-sm text-gray-500">
+            <TableCell className="text-sm text-muted-foreground">
               {commerce.phone ?? "—"}
             </TableCell>
-            <TableCell className="text-sm text-gray-500 max-w-48 truncate">
+            <TableCell className="max-w-48 truncate text-sm text-muted-foreground">
               {commerce.notes ?? "—"}
             </TableCell>
             <TableCell className="text-right">
-              <div className="flex justify-end gap-2">
-                <Link
+              <div className="flex justify-end gap-1">
+                <IconLink
                   href={`/commerces/${commerce.id}/edit`}
-                  className={buttonVariants({ variant: "ghost", size: "icon" })}
-                >
-                  <Pencil size={16} />
-                </Link>
-                <Dialog
-                  open={deletingId === commerce.id}
-                  onOpenChange={(open) =>
-                    setDeletingId(open ? commerce.id : null)
-                  }
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setDeletingId(commerce.id)}
-                  >
-                    <Trash2 size={16} className="text-red-500" />
-                  </Button>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Supprimer ce commerce ?</DialogTitle>
-                      <DialogDescription>
-                        &quot;{commerce.name}&quot; sera définitivement
-                        supprimé.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => setDeletingId(null)}
-                      >
-                        Annuler
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        disabled={pending}
-                        onClick={() => handleDelete(commerce.id)}
-                      >
-                        Supprimer
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                  label={`Modifier ${commerce.name}`}
+                  icon={Pencil}
+                />
+                <ConfirmDeleteButton
+                  label={`Supprimer ${commerce.name}`}
+                  title="Supprimer ce commerce ?"
+                  description={`« ${commerce.name} » sera définitivement supprimé.`}
+                  pending={pending}
+                  onConfirm={() => handleDelete(commerce.id)}
+                />
               </div>
             </TableCell>
           </TableRow>

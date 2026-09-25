@@ -1,8 +1,11 @@
 "use client";
 
 import { deleteStaff, updateStaff } from "@/app/actions/staff";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/layout/empty-state";
+import { ConfirmDeleteButton } from "@/components/layout/row-actions";
+import { StatusSelect } from "@/components/layout/status-select";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -20,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Users } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { StaffMember, StaffRole } from "@/lib/types";
@@ -31,14 +34,13 @@ const roleLabels: Record<StaffRole, string> = {
   SUPER_ADMIN: "Super administrateur",
 };
 
-// SUPER_ADMIN volontairement absent : civic_api refuse de toute façon
-// d'accorder ce rôle à quiconque n'est pas déjà super-admin (voir
-// StaffService.update), ce sélecteur n'a donc pas de raison de le proposer.
-const editableRoles: StaffRole[] = ["AGENT", "ADMINISTRATEUR"];
+const editableRoleLabels: Record<"AGENT" | "ADMINISTRATEUR", string> = {
+  AGENT: roleLabels.AGENT,
+  ADMINISTRATEUR: roleLabels.ADMINISTRATEUR,
+};
 
 export function StaffTable({ staff }: { staff: StaffMember[] }) {
   const [pending, startTransition] = useTransition();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<StaffMember | null>(null);
   const [draftName, setDraftName] = useState("");
 
@@ -67,14 +69,13 @@ export function StaffTable({ staff }: { staff: StaffMember[] }) {
     run(() => updateStaff(target.id, { name: draftName }), "Nom mis à jour.");
   }
 
-  function handleDelete(id: string) {
-    setDeletingId(null);
-    run(() => deleteStaff(id), "Agent supprimé.");
-  }
-
   if (staff.length === 0) {
     return (
-      <p className="text-center text-gray-500 py-12 text-sm">Aucun agent.</p>
+      <EmptyState
+        icon={Users}
+        title="Aucun agent"
+        description="Ajoutez les agents de la mairie qui utiliseront ce dashboard."
+      />
     );
   }
 
@@ -94,87 +95,52 @@ export function StaffTable({ staff }: { staff: StaffMember[] }) {
             <TableRow key={member.id}>
               <TableCell>
                 <p className="font-medium">{member.name}</p>
-                <p className="text-xs text-gray-500">{member.email}</p>
+                <p className="text-xs text-muted-foreground">{member.email}</p>
               </TableCell>
               <TableCell>
                 {member.role === "SUPER_ADMIN" ? (
                   <Badge variant="outline">{roleLabels[member.role]}</Badge>
                 ) : (
-                  <select
-                    value={member.role}
+                  <StatusSelect
+                    value={member.role as "AGENT" | "ADMINISTRATEUR"}
+                    options={editableRoleLabels}
+                    label={`Rôle de ${member.name}`}
                     disabled={pending}
-                    onChange={(e) =>
+                    onChange={(role) =>
                       run(
-                        () =>
-                          updateStaff(member.id, {
-                            role: e.target.value as StaffRole,
-                          }),
+                        () => updateStaff(member.id, { role }),
                         "Rôle mis à jour.",
                       )
                     }
-                    className="h-8 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                  >
-                    {editableRoles.map((role) => (
-                      <option key={role} value={role}>
-                        {roleLabels[role]}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 )}
               </TableCell>
-              <TableCell className="text-sm text-gray-500">
+              <TableCell className="text-sm text-muted-foreground">
                 {new Date(member.createdAt).toLocaleDateString("fr-FR")}
               </TableCell>
               <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={`Renommer ${member.name}`}
-                  onClick={() => startRename(member)}
-                >
-                  <Pencil size={16} className="text-gray-500" />
-                </Button>
-                <Dialog
-                  open={deletingId === member.id}
-                  onOpenChange={(open) =>
-                    setDeletingId(open ? member.id : null)
-                  }
-                >
+                <div className="flex justify-end gap-1">
                   <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
-                    aria-label={`Supprimer ${member.name}`}
-                    disabled={member.role === "SUPER_ADMIN"}
-                    onClick={() => setDeletingId(member.id)}
+                    aria-label={`Renommer ${member.name}`}
+                    title={`Renommer ${member.name}`}
+                    onClick={() => startRename(member)}
                   >
-                    <Trash2 size={16} className="text-red-500" />
+                    <Pencil size={16} aria-hidden="true" />
                   </Button>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Supprimer cet agent ?</DialogTitle>
-                      <DialogDescription>
-                        &quot;{member.name}&quot; perdra immédiatement
-                        l&apos;accès au dashboard. Cette action est
-                        irréversible.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => setDeletingId(null)}
-                      >
-                        Annuler
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        disabled={pending}
-                        onClick={() => handleDelete(member.id)}
-                      >
-                        Supprimer
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                  <ConfirmDeleteButton
+                    label={`Supprimer ${member.name}`}
+                    title="Supprimer cet agent ?"
+                    description={`« ${member.name} » perdra immédiatement l'accès au dashboard. Cette action est irréversible.`}
+                    disabled={member.role === "SUPER_ADMIN"}
+                    pending={pending}
+                    onConfirm={() =>
+                      run(() => deleteStaff(member.id), "Agent supprimé.")
+                    }
+                  />
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -191,11 +157,12 @@ export function StaffTable({ staff }: { staff: StaffMember[] }) {
           <DialogHeader>
             <DialogTitle>Renommer</DialogTitle>
             <DialogDescription>
-              Ce nom remplace l&apos;email dans les menus du dashboard.
+              Ce nom remplace l&apos;adresse e-mail dans les menus du dashboard.
             </DialogDescription>
           </DialogHeader>
           <Input
             value={draftName}
+            aria-label="Nouveau nom"
             minLength={2}
             maxLength={100}
             onChange={(e) => setDraftName(e.target.value)}

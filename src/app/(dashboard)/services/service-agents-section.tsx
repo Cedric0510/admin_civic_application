@@ -2,7 +2,6 @@
 
 import { setServiceAgents } from "@/app/actions/services";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -51,24 +50,21 @@ export function ServiceAgentsSection({
   }
 
   return (
-    <div className="space-y-3 rounded-lg border border-gray-200 p-4">
-      <div>
-        <Label>Agents qui reçoivent sur ce service</Label>
-        <p className="mt-1 text-xs text-gray-500">
-          Les citoyens ne peuvent réserver que sur les créneaux libres de ces
-          agents (voir{" "}
-          <Link href="/agenda" className="underline">
-            l&apos;agenda
-          </Link>
-          ). Sans agent, aucun rendez-vous n&apos;est proposé.
-        </p>
-      </div>
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Voir{" "}
+        <Link href="/agenda" className="font-medium text-brand-600 underline">
+          l&apos;agenda
+        </Link>{" "}
+        pour leurs disponibilités. Sans agent, aucun rendez-vous n&apos;est
+        proposé.
+      </p>
 
       {candidates === null ? (
         affiliated.length === 0 ? (
-          <p className="text-sm text-gray-500">Aucun agent affilié.</p>
+          <p className="text-sm text-muted-foreground">Aucun agent affilié.</p>
         ) : (
-          <ul className="space-y-1 text-sm text-gray-700">
+          <ul className="space-y-1 text-sm text-foreground">
             {affiliated.map((agent) => (
               <li key={agent.id}>{agent.name}</li>
             ))}
@@ -77,21 +73,21 @@ export function ServiceAgentsSection({
       ) : (
         <>
           {candidates.length === 0 ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Aucun agent dans cette commune.
             </p>
           ) : (
             <ul className="space-y-2">
               {candidates.map((member) => (
                 <li key={member.id}>
-                  <label className="flex items-center gap-3 text-sm text-gray-700">
+                  <label className="flex items-center gap-3 text-sm text-foreground">
                     <input
                       type="checkbox"
                       checked={selected.has(member.id)}
                       onChange={() => toggle(member.id)}
                     />
                     <span>{member.name}</span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-muted-foreground">
                       {ROLE_LABELS[member.role]}
                     </span>
                   </label>

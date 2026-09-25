@@ -1,4 +1,6 @@
 import { getAppointments } from "@/app/actions/appointments";
+import { PageHeader } from "@/components/layout/page-header";
+import { Panel } from "@/components/layout/panel";
 import { parisDate } from "@/lib/paris-time";
 import { AppointmentsTable } from "./appointments-table";
 
@@ -21,16 +23,18 @@ export default async function AppointmentsPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Rendez-vous</h1>
-
-      <div className="bg-white rounded-xl border border-gray-200">
+      <PageHeader
+        title="Rendez-vous"
+        description="Les demandes des habitants sur les créneaux libres de vos agents. Confirmez ou annulez chaque demande."
+      />
+      <Panel padded={false}>
         <AppointmentsTable
           appointments={appointments}
           services={services}
           currentService={service}
           currentDate={date}
         />
-      </div>
+      </Panel>
     </div>
   );
 }

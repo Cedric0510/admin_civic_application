@@ -100,8 +100,38 @@ export type AgendaWeek = {
   }[];
 };
 
+export type CommuneLegal = {
+  communeName: string;
+  legalNotice: string;
+  privacyPolicy: string;
+  legalNoticeIsCustom: boolean;
+  privacyPolicyIsCustom: boolean;
+};
+
 export type CitySettings = {
   village_name: string;
+  legal: CommuneLegal;
+};
+
+export type FeedbackKind = "PROBLEME" | "IDEE" | "AUTRE";
+
+export type FeedbackItem = {
+  id: string;
+  kind: FeedbackKind;
+  rating: number;
+  message: string;
+  createdAt: string;
+  communeName: string;
+  contactEmail: string | null;
+};
+
+export type FeedbackOverview = {
+  summary: {
+    total: number;
+    average: number | null;
+    byKind: Record<FeedbackKind, number>;
+  };
+  items: FeedbackItem[];
 };
 
 export type AppModule =

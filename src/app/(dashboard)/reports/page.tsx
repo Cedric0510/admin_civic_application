@@ -1,4 +1,6 @@
 import { getReports } from "@/app/actions/reports";
+import { PageHeader } from "@/components/layout/page-header";
+import { Panel } from "@/components/layout/panel";
 import { ReportsTable } from "./reports-table";
 
 export default async function ReportsPage() {
@@ -6,11 +8,13 @@ export default async function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Signalements</h1>
-
-      <div className="bg-white rounded-xl border border-gray-200">
+      <PageHeader
+        title="Signalements"
+        description="Les problèmes signalés par les habitants, avec leur photo. Faites avancer leur statut au fil du traitement."
+      />
+      <Panel padded={false}>
         <ReportsTable reports={reports} />
-      </div>
+      </Panel>
     </div>
   );
 }

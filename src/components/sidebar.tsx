@@ -18,6 +18,7 @@ import {
   Users,
   Landmark,
   MapPin,
+  MessageSquareText,
   Menu,
   X,
 } from "lucide-react";
@@ -50,6 +51,7 @@ function navGroups(
   const administration: NavItem[] = [
     ...(role !== "AGENT"
       ? [
+          { href: "/feedback", label: "Retours", icon: MessageSquareText },
           { href: "/staff", label: "Agents", icon: Users },
           { href: "/settings", label: "Paramètres", icon: Settings },
         ]

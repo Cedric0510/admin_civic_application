@@ -1,9 +1,10 @@
 "use client";
 
 import { createStaff } from "@/app/actions/staff";
-import { Button } from "@/components/ui/button";
+import { Field } from "@/components/layout/field";
+import { FormActions } from "@/components/layout/form-actions";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -27,65 +28,46 @@ export function StaffForm() {
   }
 
   return (
-    <form action={handleSubmit} className="space-y-4">
-      <div className="space-y-1">
-        <Label htmlFor="name">Nom *</Label>
+    <form action={handleSubmit} className="space-y-5">
+      <Field
+        label="Nom *"
+        id="name"
+        hint="Affiché dans les menus à la place de l'adresse e-mail."
+      >
         <Input
-          id="name"
           name="name"
           placeholder="ex. Marie Durand"
           minLength={2}
           maxLength={100}
           required
         />
-        <p className="text-xs text-gray-500">
-          Affiché dans les menus à la place de l&apos;email.
-        </p>
-      </div>
+      </Field>
 
-      <div className="space-y-1">
-        <Label htmlFor="email">Email *</Label>
-        <Input id="email" name="email" type="email" required />
-      </div>
+      <Field label="Email *" id="email">
+        <Input name="email" type="email" required />
+      </Field>
 
-      <div className="space-y-1">
-        <Label htmlFor="password">Mot de passe *</Label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          minLength={8}
-          required
-        />
-        <p className="text-xs text-gray-500">8 caractères minimum.</p>
-      </div>
+      <Field label="Mot de passe *" id="password" hint="8 caractères minimum.">
+        <Input name="password" type="password" minLength={8} required />
+      </Field>
 
-      <div className="space-y-1">
-        <Label htmlFor="role">Rôle *</Label>
-        <select
-          id="role"
-          name="role"
-          required
-          defaultValue="AGENT"
-          className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-        >
+      <Field
+        label="Rôle *"
+        id="role"
+        hint="Un administrateur peut à son tour gérer les agents et les paramètres de la commune."
+      >
+        <NativeSelect name="role" required defaultValue="AGENT">
           <option value="AGENT">Agent</option>
           <option value="ADMINISTRATEUR">Administrateur</option>
-        </select>
-        <p className="text-xs text-gray-500">
-          Un administrateur peut à son tour gérer les agents et les
-          paramètres de la commune.
-        </p>
-      </div>
+        </NativeSelect>
+      </Field>
 
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Création…" : "Créer"}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => router.back()}>
-          Annuler
-        </Button>
-      </div>
+      <FormActions
+        pending={pending}
+        submitLabel="Créer"
+        pendingLabel="Création…"
+        onCancel={() => router.back()}
+      />
     </form>
   );
 }

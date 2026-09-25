@@ -30,7 +30,7 @@ function RuleButtons({
   onClear: () => void;
 }) {
   const base =
-    "rounded p-1 transition-colors hover:bg-gray-100 disabled:opacity-40";
+    "rounded p-1 transition-colors hover:bg-muted disabled:opacity-40";
   return (
     <div className="flex items-center justify-center gap-0.5">
       <button
@@ -59,7 +59,7 @@ function RuleButtons({
         aria-label={`${label} : rétablir les horaires habituels`}
         disabled={disabled}
         onClick={onClear}
-        className={cn(base, "text-gray-500")}
+        className={cn(base, "text-muted-foreground")}
       >
         <RotateCcw size={14} />
       </button>
@@ -104,7 +104,7 @@ export function AgendaGrid({ week }: { week: AgendaWeek }) {
   function hourRow(hour: number) {
     return (
       <div key={hour} className={GRID_COLUMNS}>
-        <div className="pr-2 pt-2 text-right text-xs text-gray-400">
+        <div className="pr-2 pt-2 text-right text-xs text-muted-foreground">
           {String(hour).padStart(2, "0")}h
         </div>
         {week.days.map((day) => {
@@ -147,7 +147,7 @@ export function AgendaGrid({ week }: { week: AgendaWeek }) {
                 "flex min-h-10 flex-col gap-0.5 rounded border p-0.5 text-left text-[11px] transition-colors disabled:opacity-60",
                 cell.available
                   ? "border-emerald-300 bg-emerald-100 hover:bg-emerald-200"
-                  : "border-gray-200 bg-gray-100 hover:bg-gray-200",
+                  : "border-border bg-muted hover:bg-gray-200",
                 exception && "ring-2 ring-amber-400 ring-offset-1",
               )}
             >
@@ -170,7 +170,7 @@ export function AgendaGrid({ week }: { week: AgendaWeek }) {
   function periodRow(label: string, period: "MORNING" | "AFTERNOON") {
     return (
       <div className={cn(GRID_COLUMNS, "items-center")}>
-        <div className="pr-2 text-right text-xs font-medium text-gray-500">
+        <div className="pr-2 text-right text-xs font-medium text-muted-foreground">
           {label}
         </div>
         {week.days.map((day) => (
@@ -188,7 +188,7 @@ export function AgendaGrid({ week }: { week: AgendaWeek }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-3 text-sm text-gray-600">
+      <div className="flex items-center gap-3 text-sm text-muted-foreground">
         <span className="font-medium">Toute la semaine</span>
         {buttonsFor("Toute la semaine", {
           scope: "WEEK",
@@ -220,13 +220,13 @@ export function AgendaGrid({ week }: { week: AgendaWeek }) {
         </div>
       </div>
 
-      <ul className="flex flex-wrap gap-x-5 gap-y-1 pt-2 text-xs text-gray-500">
+      <ul className="flex flex-wrap gap-x-5 gap-y-1 pt-2 text-xs text-muted-foreground">
         <li className="flex items-center gap-1.5">
           <span className="h-3 w-3 rounded border border-emerald-300 bg-emerald-100" />
           Disponible
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded border border-gray-200 bg-gray-100" />
+          <span className="h-3 w-3 rounded border border-border bg-muted" />
           Indisponible
         </li>
         <li className="flex items-center gap-1.5">

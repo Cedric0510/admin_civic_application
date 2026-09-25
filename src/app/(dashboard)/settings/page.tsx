@@ -1,15 +1,23 @@
 import { getSettings } from "@/app/actions/settings";
+import { PageHeader } from "@/components/layout/page-header";
 import { SettingsForm } from "./settings-form";
 
 export default async function SettingsPage() {
   const settings = await getSettings();
 
   return (
-    <div className="space-y-6 max-w-lg">
-      <h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <SettingsForm villageName={settings?.village_name ?? ""} />
-      </div>
+    <div className="max-w-3xl space-y-6">
+      <PageHeader
+        title="Paramètres"
+        description="L'identité de la commune et les textes légaux que les habitants doivent accepter à l'inscription."
+      />
+      {settings ? (
+        <SettingsForm settings={settings} />
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Impossible de charger les paramètres de la commune.
+        </p>
+      )}
     </div>
   );
 }

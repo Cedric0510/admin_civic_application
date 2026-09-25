@@ -1,5 +1,11 @@
 import Link from "next/link";
+import { Building2, LogIn, Plus, Settings2 } from "lucide-react";
+import { getCommunes, manageCommune } from "@/app/actions/superadmin";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/layout/empty-state";
+import { PageHeader } from "@/components/layout/page-header";
+import { Panel } from "@/components/layout/panel";
+import { StatusBadge } from "@/components/layout/status-badge";
 import {
   Table,
   TableBody,
@@ -8,34 +14,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { LogIn, Plus, Settings2 } from "lucide-react";
-import { getCommunes, manageCommune } from "@/app/actions/superadmin";
 
 export default async function SuperAdminPage() {
   const communes = await getCommunes();
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Communes</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Provisionnement des communes partenaires et de leur premier
-            compte administrateur.
-          </p>
-        </div>
-        <Link href="/superadmin/new" className={buttonVariants()}>
-          <Plus size={16} />
-          Nouvelle commune
-        </Link>
-      </div>
+      <PageHeader
+        title="Communes"
+        description="Provisionnement des communes partenaires et de leur premier compte administrateur."
+        actions={
+          <Link href="/superadmin/new" className={buttonVariants({ size: "lg" })}>
+            <Plus size={16} aria-hidden="true" />
+            Nouvelle commune
+          </Link>
+        }
+      />
 
-      <div className="bg-white rounded-xl border border-gray-200">
+      <Panel padded={false}>
         {communes.length === 0 ? (
-          <p className="text-center text-gray-500 py-12 text-sm">
-            Aucune commune provisionnée.
-          </p>
+          <EmptyState
+            icon={Building2}
+            title="Aucune commune provisionnée"
+            description="Créez la première commune partenaire avec son compte administrateur."
+          />
         ) : (
           <Table>
             <TableHeader>
@@ -45,27 +47,25 @@ export default async function SuperAdminPage() {
                 <TableHead>Créée le</TableHead>
                 <TableHead>Accès</TableHead>
                 <TableHead>Modules</TableHead>
-                <TableHead className="w-64 text-right">Actions</TableHead>
+                <TableHead className="w-72 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {communes.map((commune) => (
                 <TableRow key={commune.id}>
                   <TableCell className="font-medium">{commune.name}</TableCell>
-                  <TableCell className="text-sm text-gray-500">
+                  <TableCell className="text-sm text-muted-foreground">
                     {commune.slug}
                   </TableCell>
-                  <TableCell className="text-sm text-gray-500">
+                  <TableCell className="text-sm text-muted-foreground">
                     {new Date(commune.createdAt).toLocaleDateString("fr-FR")}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={commune.suspendedAt ? "destructive" : "secondary"}
-                    >
+                    <StatusBadge tone={commune.suspendedAt ? "bad" : "good"}>
                       {commune.suspendedAt ? "Suspendu" : "Actif"}
-                    </Badge>
+                    </StatusBadge>
                   </TableCell>
-                  <TableCell className="text-sm text-gray-500">
+                  <TableCell className="text-sm text-muted-foreground">
                     {commune.disabledModules.length === 0
                       ? "Tous actifs"
                       : `${commune.disabledModules.length} désactivé${commune.disabledModules.length > 1 ? "s" : ""}`}
@@ -79,13 +79,13 @@ export default async function SuperAdminPage() {
                           size: "sm",
                         })}
                       >
-                        <Settings2 size={14} />
+                        <Settings2 size={14} aria-hidden="true" />
                         Accès et modules
                       </Link>
                       <form action={manageCommune}>
                         <input type="hidden" name="slug" value={commune.slug} />
                         <Button type="submit" variant="outline" size="sm">
-                          <LogIn size={14} />
+                          <LogIn size={14} aria-hidden="true" />
                           Gérer
                         </Button>
                       </form>
@@ -96,7 +96,7 @@ export default async function SuperAdminPage() {
             </TableBody>
           </Table>
         )}
-      </div>
+      </Panel>
     </div>
   );
 }

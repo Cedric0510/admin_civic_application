@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/page-header";
+import { Panel } from "@/components/layout/panel";
 import { PollsTable } from "./polls-table";
 import { getPolls } from "@/app/actions/polls";
 
@@ -9,17 +11,19 @@ export default async function PollsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Sondages</h1>
-        <Link href="/polls/new" className={buttonVariants()}>
-            <Plus size={16} />
+      <PageHeader
+        title="Sondages"
+        description="Consultez les habitants : chaque compte vote une seule fois par sondage."
+        actions={
+          <Link href="/polls/new" className={buttonVariants({ size: "lg" })}>
+            <Plus size={16} aria-hidden="true" />
             Nouveau sondage
           </Link>
-      </div>
-
-      <div className="bg-white rounded-xl border border-gray-200">
+        }
+      />
+      <Panel padded={false}>
         <PollsTable polls={polls} />
-      </div>
+      </Panel>
     </div>
   );
 }

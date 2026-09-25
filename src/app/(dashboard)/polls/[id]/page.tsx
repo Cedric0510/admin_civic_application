@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { getPoll } from "@/app/actions/polls";
+import { PageHeader } from "@/components/layout/page-header";
+import { Panel } from "@/components/layout/panel";
 
 export default async function PollDetailPage({
   params,
@@ -14,54 +13,60 @@ export default async function PollDetailPage({
 
   if (!poll) notFound();
 
-  const options = poll.options ?? [];
+  const options = [...(poll.options ?? [])].sort(
+    (a, b) => b.voteCount - a.voteCount,
+  );
   const totalVotes = options.reduce((sum, o) => sum + o.voteCount, 0);
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div className="flex items-center gap-3">
-        <Link
-          href="/polls"
-          className={buttonVariants({ variant: "ghost", size: "icon" })}
-        >
-          <ArrowLeft size={18} />
-        </Link>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Résultats du sondage
-        </h1>
-      </div>
+    <div className="max-w-2xl space-y-6">
+      <PageHeader
+        title="Résultats du sondage"
+        backHref="/polls"
+        backLabel="Sondages"
+      />
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-        <p className="font-semibold text-gray-900 text-lg">{poll.question}</p>
-        <p className="text-sm text-gray-500">{totalVotes} vote{totalVotes !== 1 ? "s" : ""} au total</p>
+      <Panel>
+        <div className="space-y-5">
+          <div>
+            <p className="text-lg font-semibold text-foreground">
+              {poll.question}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {totalVotes} vote{totalVotes !== 1 ? "s" : ""} au total
+            </p>
+          </div>
 
-        <div className="space-y-4">
-          {[...options]
-            .sort((a, b) => b.voteCount - a.voteCount)
-            .map((option) => {
+          <ul className="space-y-4">
+            {options.map((option) => {
               const pct =
                 totalVotes > 0
                   ? Math.round((option.voteCount / totalVotes) * 100)
                   : 0;
               return (
-                <div key={option.id} className="space-y-1">
-                  <div className="flex justify-between text-sm">
+                <li key={option.id} className="space-y-1.5">
+                  <div className="flex justify-between gap-3 text-sm">
                     <span className="font-medium">{option.optionText}</span>
-                    <span className="text-gray-500">
+                    <span className="shrink-0 text-muted-foreground">
                       {option.voteCount} vote{option.voteCount !== 1 ? "s" : ""} ({pct}%)
                     </span>
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    role="img"
+                    aria-label={`${pct} % des votes`}
+                    className="h-2.5 overflow-hidden rounded-full bg-muted"
+                  >
                     <div
-                      className="h-full bg-green-500 rounded-full transition-all"
+                      className="h-full rounded-full bg-brand-500 transition-all"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                </div>
+                </li>
               );
             })}
+          </ul>
         </div>
-      </div>
+      </Panel>
     </div>
   );
 }

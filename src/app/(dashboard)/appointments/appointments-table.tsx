@@ -4,8 +4,15 @@ import {
   deleteAppointment,
   updateAppointmentStatus,
 } from "@/app/actions/appointments";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/layout/empty-state";
+import { ConfirmDeleteButton } from "@/components/layout/row-actions";
+import { StatusBadge } from "@/components/layout/status-badge";
+import { StatusSelect } from "@/components/layout/status-select";
+import type { Tone } from "@/components/stats/tone";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import {
   Table,
   TableBody,
@@ -14,17 +21,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Trash2 } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import { formatDateTime } from "@/lib/paris-time";
 import type { Appointment, AppointmentStatus } from "@/lib/types";
@@ -35,16 +34,11 @@ const statusLabels: Record<AppointmentStatus, string> = {
   ANNULE: "Annulé",
 };
 
-const statusBadgeVariant: Record<
-  AppointmentStatus,
-  "secondary" | "default" | "destructive"
-> = {
-  DEMANDE: "secondary",
-  CONFIRME: "default",
-  ANNULE: "destructive",
+const statusTones: Record<AppointmentStatus, Tone> = {
+  DEMANDE: "warn",
+  CONFIRME: "good",
+  ANNULE: "neutral",
 };
-
-const statusOptions: AppointmentStatus[] = ["DEMANDE", "CONFIRME", "ANNULE"];
 
 type Props = {
   appointments: Appointment[];
@@ -62,7 +56,6 @@ export function AppointmentsTable({
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function applyFilter(key: string, value: string) {
     const params = new URLSearchParams();
@@ -77,7 +70,6 @@ export function AppointmentsTable({
   }
 
   function handleDelete(id: string) {
-    setDeletingId(null);
     startTransition(async () => {
       try {
         await deleteAppointment(id);
@@ -101,9 +93,10 @@ export function AppointmentsTable({
 
   return (
     <div>
-      <div className="flex flex-wrap gap-3 p-4 border-b border-gray-100">
-        <select
-          className="text-sm border border-gray-200 rounded-md px-3 py-1.5 bg-white"
+      <div className="flex flex-wrap items-center gap-3 border-b border-border p-4">
+        <NativeSelect
+          aria-label="Filtrer par service"
+          className="w-auto min-w-48"
           value={currentService ?? ""}
           onChange={(e) => applyFilter("service", e.target.value)}
         >
@@ -113,31 +106,38 @@ export function AppointmentsTable({
               {s}
             </option>
           ))}
-        </select>
+        </NativeSelect>
 
-        <input
+        <Input
           type="date"
-          className="text-sm border border-gray-200 rounded-md px-3 py-1.5 bg-white"
+          aria-label="Filtrer par jour"
+          className="w-auto"
           value={currentDate ?? ""}
           onChange={(e) => applyFilter("date", e.target.value)}
         />
 
         {(currentService || currentDate) && (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
+          <Button variant="ghost" onClick={clearFilters}>
             Réinitialiser
           </Button>
         )}
       </div>
 
       {appointments.length === 0 ? (
-        <p className="text-center text-gray-500 py-12 text-sm">
-          Aucun rendez-vous.
-        </p>
+        <EmptyState
+          icon={CalendarDays}
+          title="Aucun rendez-vous"
+          description={
+            currentService || currentDate
+              ? "Aucun rendez-vous ne correspond à ces filtres."
+              : "Les demandes de rendez-vous des habitants apparaîtront ici."
+          }
+        />
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Citoyen</TableHead>
+              <TableHead>Habitant</TableHead>
               <TableHead>Service</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Agent</TableHead>
@@ -149,84 +149,44 @@ export function AppointmentsTable({
           <TableBody>
             {appointments.map((appt) => (
               <TableRow key={appt.id}>
-                <TableCell>
-                  <p className="font-medium">{appt.citizen.email}</p>
-                </TableCell>
+                <TableCell className="font-medium">{appt.citizen.email}</TableCell>
                 <TableCell>
                   <Badge variant="outline">{appt.service.name}</Badge>
                 </TableCell>
-                <TableCell className="text-sm text-gray-500 capitalize">
+                <TableCell className="text-sm text-muted-foreground capitalize">
                   {formatDateTime(appt.startsAt)}
                 </TableCell>
-                <TableCell className="text-sm text-gray-500">
+                <TableCell className="text-sm text-muted-foreground">
                   {appt.agent?.name ?? "—"}
                 </TableCell>
-                <TableCell className="text-sm text-gray-500 max-w-xs truncate">
+                <TableCell
+                  title={appt.message ?? undefined}
+                  className="max-w-xs truncate text-sm text-muted-foreground"
+                >
                   {appt.message ?? "—"}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Badge variant={statusBadgeVariant[appt.status]}>
+                    <StatusBadge tone={statusTones[appt.status]}>
                       {statusLabels[appt.status]}
-                    </Badge>
-                    <select
+                    </StatusBadge>
+                    <StatusSelect
                       value={appt.status}
+                      options={statusLabels}
+                      label={`Statut du rendez-vous de ${appt.citizen.email}`}
                       disabled={pending}
-                      onChange={(e) =>
-                        handleStatusChange(
-                          appt.id,
-                          e.target.value as AppointmentStatus,
-                        )
-                      }
-                      className="h-8 rounded-md border border-input bg-transparent px-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                    >
-                      {statusOptions.map((status) => (
-                        <option key={status} value={status}>
-                          {statusLabels[status]}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(status) => handleStatusChange(appt.id, status)}
+                    />
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Dialog
-                    open={deletingId === appt.id}
-                    onOpenChange={(open) =>
-                      setDeletingId(open ? appt.id : null)
-                    }
-                  >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeletingId(appt.id)}
-                    >
-                      <Trash2 size={16} className="text-red-500" />
-                    </Button>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Supprimer le rendez-vous ?</DialogTitle>
-                        <DialogDescription>
-                          Le rendez-vous de {appt.citizen.email} sera
-                          définitivement supprimé.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <Button
-                          variant="outline"
-                          onClick={() => setDeletingId(null)}
-                        >
-                          Annuler
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          disabled={pending}
-                          onClick={() => handleDelete(appt.id)}
-                        >
-                          Supprimer
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                  <ConfirmDeleteButton
+                    label={`Supprimer le rendez-vous de ${appt.citizen.email}`}
+                    title="Supprimer le rendez-vous ?"
+                    description={`Le rendez-vous de ${appt.citizen.email} sera définitivement supprimé.`}
+                    pending={pending}
+                    onConfirm={() => handleDelete(appt.id)}
+                  />
                 </TableCell>
               </TableRow>
             ))}

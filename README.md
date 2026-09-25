@@ -35,6 +35,11 @@ La page de connexion propose « Mot de passe oublié ? » : l'agent saisit son a
 
 Sur la fiche d'un commerce, « Personnes qui gèrent ce commerce » liste les comptes associés (plusieurs possibles) et permet d'en ajouter par e-mail. Si l'adresse a déjà un compte dans l'appli, la personne est associée aussitôt ; sinon elle reçoit une invitation avec un code à saisir à l'inscription. Les invitations en attente s'affichent sous la liste avec leurs dates, et peuvent être renvoyées ou annulées.
 
+## Retours des habitants et textes légaux
+
+- **Retours** (administrateurs et super-administrateur) : les avis envoyés depuis l'application, avec la note moyenne, la répartition par type et les plus récents. L'adresse e-mail d'un habitant n'apparaît que s'il a accepté d'être recontacté. Un super-administrateur voit toutes les communes, ou celle qu'il gère à distance.
+- **Paramètres** : le nom de la commune et les deux textes légaux (mentions légales, politique de confidentialité) que les habitants doivent accepter à l'inscription. Tant que la mairie n'a rien écrit, l'application affiche un texte modèle qui la nomme ; « Rétablir le texte modèle » annule une personnalisation. Les textes n'utilisent que des paragraphes, des titres `## ` et des listes `- `. Seuls les champs modifiés sont envoyés, pour ne pas figer un texte modèle qui évoluerait.
+
 ## Accès et modules d'une commune (super-administrateur)
 
 Depuis « Communes », le lien « Accès et modules » ouvre la page de la commune :
@@ -56,7 +61,7 @@ Tout est rendu côté serveur, sans bibliothèque de graphiques : courbes, histo
 
 ## Identité visuelle
 
-La couleur de marque reprend le bleu de l'application mobile ; elle est définie une seule fois dans `src/app/globals.css` (échelle `brand-50` à `brand-950`, bouton principal, fond des pages). Le menu latéral est groupé par thème et devient un tiroir sur mobile.
+La couleur de marque reprend le bleu de l'application mobile ; elle est définie une seule fois dans `src/app/globals.css` (échelle `brand-50` à `brand-950`, bouton principal, fond des pages). Le menu latéral est groupé par thème et devient un tiroir sur mobile. Toutes les pages partagent les mêmes composants (`src/components/layout/`) : en-tête, panneau, tableau, état vide avec action, champs avec aide et erreur reliées à leur contrôle, boutons d'action nommés pour les lecteurs d'écran.
 
 ## Structure
 
@@ -64,6 +69,7 @@ La couleur de marque reprend le bleu de l'application mobile ; elle est définie
 src/app/(dashboard)/   pages du tableau de bord (un dossier par domaine)
 src/app/actions/       Server Actions, un fichier par domaine
 src/components/stats/  cartes, graphiques (SVG/CSS) et sections du tableau de bord
+src/components/layout/ en-tête de page, panneau, état vide, champ de formulaire, badge de statut, actions de ligne
 src/components/sidebar.tsx  menu latéral par rôle, tiroir sur mobile
 src/lib/api/           client HTTP vers civic_api
 src/lib/session.ts     membre du personnel connecté, commune gérée

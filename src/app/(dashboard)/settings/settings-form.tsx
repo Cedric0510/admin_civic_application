@@ -1,42 +1,144 @@
 "use client";
 
-import { updateSettings } from "@/app/actions/settings";
+import { updateSettings, type SettingsChanges } from "@/app/actions/settings";
+import { Field } from "@/components/layout/field";
+import { Panel } from "@/components/layout/panel";
+import { StatusBadge } from "@/components/layout/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useTransition } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import type { CitySettings } from "@/lib/types";
 
-export function SettingsForm({ villageName }: { villageName: string }) {
+const LEGAL_HINT =
+  "Utilisez « ## » devant un titre et laissez une ligne vide entre deux paragraphes. « - » en début de ligne crée une liste.";
+
+export function SettingsForm({ settings }: { settings: CitySettings }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [name, setName] = useState(settings.village_name);
+  const [legalNotice, setLegalNotice] = useState(settings.legal.legalNotice);
+  const [privacyPolicy, setPrivacyPolicy] = useState(
+    settings.legal.privacyPolicy,
+  );
 
-  function handleSubmit(formData: FormData) {
+  const changes: SettingsChanges = {
+    ...(name.trim() !== settings.village_name ? { name: name.trim() } : {}),
+    ...(legalNotice !== settings.legal.legalNotice ? { legalNotice } : {}),
+    ...(privacyPolicy !== settings.legal.privacyPolicy ? { privacyPolicy } : {}),
+  };
+  const hasChanges = Object.keys(changes).length > 0;
+
+  function save(payload: SettingsChanges, success: string) {
     startTransition(async () => {
       try {
-        await updateSettings(formData);
-        toast.success("Paramètres sauvegardés.");
-      } catch {
-        toast.error("Erreur lors de la sauvegarde.");
+        await updateSettings(payload);
+        toast.success(success);
+        router.refresh();
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Erreur lors de la sauvegarde.",
+        );
       }
     });
   }
 
   return (
-    <form action={handleSubmit} className="space-y-4">
-      <div className="space-y-1">
-        <Label htmlFor="village_name">Nom de la commune</Label>
-        <Input
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (hasChanges) save(changes, "Paramètres sauvegardés.");
+      }}
+      className="space-y-6"
+    >
+      <Panel title="Identité de la commune">
+        <Field
+          label="Nom de la commune"
           id="village_name"
-          name="village_name"
-          defaultValue={villageName}
-          required
-        />
-        <p className="text-xs text-gray-500">
-          Ce nom est affiché sur la page d&apos;accueil de l&apos;application et
-          utilisé pour la météo.
-        </p>
-      </div>
-      <Button type="submit" disabled={pending}>
+          hint="Affiché sur l'accueil de l'application et utilisé pour la météo."
+        >
+          <Input
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            required
+          />
+        </Field>
+      </Panel>
+
+      <Panel
+        title="Mentions légales"
+        description={LEGAL_HINT}
+        actions={
+          <StatusBadge tone={settings.legal.legalNoticeIsCustom ? "brand" : "neutral"}>
+            {settings.legal.legalNoticeIsCustom ? "Personnalisées" : "Texte modèle"}
+          </StatusBadge>
+        }
+      >
+        <div className="space-y-3">
+          <Field label="Texte des mentions légales" id="legal_notice">
+            <Textarea
+              rows={12}
+              value={legalNotice}
+              onChange={(event) => setLegalNotice(event.target.value)}
+            />
+          </Field>
+          {settings.legal.legalNoticeIsCustom && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              onClick={() =>
+                save({ legalNotice: "" }, "Texte modèle rétabli.")
+              }
+            >
+              Rétablir le texte modèle
+            </Button>
+          )}
+        </div>
+      </Panel>
+
+      <Panel
+        title="Politique de confidentialité"
+        description={LEGAL_HINT}
+        actions={
+          <StatusBadge tone={settings.legal.privacyPolicyIsCustom ? "brand" : "neutral"}>
+            {settings.legal.privacyPolicyIsCustom ? "Personnalisée" : "Texte modèle"}
+          </StatusBadge>
+        }
+      >
+        <div className="space-y-3">
+          <Field label="Texte de la politique de confidentialité" id="privacy_policy">
+            <Textarea
+              rows={14}
+              value={privacyPolicy}
+              onChange={(event) => setPrivacyPolicy(event.target.value)}
+            />
+          </Field>
+          {settings.legal.privacyPolicyIsCustom && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              onClick={() =>
+                save({ privacyPolicy: "" }, "Texte modèle rétabli.")
+              }
+            >
+              Rétablir le texte modèle
+            </Button>
+          )}
+        </div>
+      </Panel>
+
+      <p className="text-sm text-muted-foreground">
+        Les textes modèles nomment votre commune comme responsable du
+        traitement. Faites-les relire avant la mise en service, puis
+        complétez-les si besoin (adresse de la mairie, directeur de la
+        publication, contact pour exercer ses droits).
+      </p>
+
+      <Button type="submit" size="lg" disabled={pending || !hasChanges}>
         {pending ? "Sauvegarde…" : "Enregistrer"}
       </Button>
     </form>
