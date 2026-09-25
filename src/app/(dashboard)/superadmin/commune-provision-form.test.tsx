@@ -8,7 +8,9 @@ vi.mock("@/app/actions/superadmin", () => ({
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), back: vi.fn() }),
 }));
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() },
+}));
 
 const { CommuneProvisionForm } = await import("./commune-provision-form");
 const { toast } = await import("sonner");
@@ -20,7 +22,7 @@ function fill(label: string, value: string) {
 function fillEverything(overrides: Record<string, string> = {}) {
   const values: Record<string, string> = {
     "Identifiant (slug) *": "bessan",
-    "Code postal": "34550",
+    "Code postal *": "34550",
     "Email *": "mairie@bessan.fr",
     "Confirmer l'email *": "mairie@bessan.fr",
     "Mot de passe *": "Un-mot-de-passe",
@@ -34,8 +36,17 @@ function fillEverything(overrides: Record<string, string> = {}) {
 }
 
 beforeEach(() => {
-  provisionMock.mockReset().mockResolvedValue(undefined);
+  provisionMock.mockReset().mockResolvedValue({
+    weather: {
+      status: "ok",
+      placeName: "Bessan",
+      temperature: 21.5,
+      description: "ciel dégagé",
+    },
+  });
   vi.mocked(toast.error).mockClear();
+  vi.mocked(toast.success).mockClear();
+  vi.mocked(toast.warning).mockClear();
 });
 
 describe("CommuneProvisionForm", () => {
@@ -54,12 +65,49 @@ describe("CommuneProvisionForm", () => {
   it("sends the postal code that locates the commune for the weather", async () => {
     render(<CommuneProvisionForm />);
 
-    fillEverything({ "Code postal": "12260" });
+    fillEverything({ "Code postal *": "12260" });
     fireEvent.click(screen.getByRole("button", { name: "Provisionner" }));
 
     await waitFor(() => expect(provisionMock).toHaveBeenCalledTimes(1));
     const data = provisionMock.mock.calls[0][0] as FormData;
     expect(data.get("communePostalCode")).toBe("12260");
+  });
+
+  it("cannot be submitted without a postal code, since the weather depends on it", () => {
+    render(<CommuneProvisionForm />);
+
+    expect(screen.getByLabelText("Code postal *")).toBeRequired();
+  });
+
+  it("tells where the weather of the new commune was found", async () => {
+    render(<CommuneProvisionForm />);
+
+    fillEverything();
+    fireEvent.click(screen.getByRole("button", { name: "Provisionner" }));
+
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith(
+        "Météo trouvée : Bessan, 21,5 °C, ciel dégagé.",
+      ),
+    );
+    expect(toast.warning).not.toHaveBeenCalled();
+  });
+
+  it("warns, once the commune exists, when no weather was found for its postal code", async () => {
+    provisionMock.mockResolvedValue({ weather: { status: "not-found" } });
+    render(<CommuneProvisionForm />);
+
+    fillEverything({ "Code postal *": "97400" });
+    fireEvent.click(screen.getByRole("button", { name: "Provisionner" }));
+
+    await waitFor(() =>
+      expect(toast.warning).toHaveBeenCalledWith(
+        expect.stringContaining("code postal 97400"),
+      ),
+    );
+    expect(toast.success).toHaveBeenCalledWith(
+      "Commune et compte administrateur créés.",
+    );
   });
 
   it("creates neither the commune nor the account when the passwords differ", async () => {

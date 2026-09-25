@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { CitySettings } from "@/lib/types";
+import { describeWeatherResult } from "@/lib/weather-messages";
 
 const LEGAL_HINT =
   "Utilisez « ## » devant un titre et laissez une ligne vide entre deux paragraphes. « - » en début de ligne crée une liste.";
@@ -31,19 +32,30 @@ export function SettingsForm({ settings }: { settings: CitySettings }) {
       ? { postalCode: postalCode.trim() }
       : {}),
     ...(legalNotice !== settings.legal.legalNotice ? { legalNotice } : {}),
-    ...(privacyPolicy !== settings.legal.privacyPolicy ? { privacyPolicy } : {}),
+    ...(privacyPolicy !== settings.legal.privacyPolicy
+      ? { privacyPolicy }
+      : {}),
   };
   const hasChanges = Object.keys(changes).length > 0;
 
   function save(payload: SettingsChanges, success: string) {
     startTransition(async () => {
       try {
-        await updateSettings(payload);
+        const weather = await updateSettings(payload);
         toast.success(success);
+        if (weather) {
+          const { tone, message } = describeWeatherResult(
+            weather,
+            payload.postalCode ?? settings.postal_code,
+          );
+          toast[tone](message);
+        }
         router.refresh();
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Erreur lors de la sauvegarde.",
+          error instanceof Error
+            ? error.message
+            : "Erreur lors de la sauvegarde.",
         );
       }
     });
@@ -58,40 +70,46 @@ export function SettingsForm({ settings }: { settings: CitySettings }) {
       className="space-y-6"
     >
       <Panel title="Identité de la commune">
-        <Field
-          label="Nom de la commune"
-          id="village_name"
-          hint="Affiché sur l'accueil de l'application."
-        >
-          <Input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            required
-          />
-        </Field>
-        <Field
-          label="Code postal"
-          id="postal_code"
-          hint="Sert à trouver la météo de votre commune : plusieurs communes portent le même nom."
-        >
-          <Input
-            value={postalCode}
-            onChange={(event) => setPostalCode(event.target.value)}
-            inputMode="numeric"
-            autoComplete="postal-code"
-            pattern="\d{5}"
-            title="5 chiffres"
-            maxLength={5}
-          />
-        </Field>
+        <div className="space-y-5">
+          <Field
+            label="Nom de la commune"
+            id="village_name"
+            hint="Affiché sur l'accueil de l'application."
+          >
+            <Input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              required
+            />
+          </Field>
+          <Field
+            label="Code postal"
+            id="postal_code"
+            hint="Sert à trouver la météo de votre commune : plusieurs communes portent le même nom."
+          >
+            <Input
+              value={postalCode}
+              onChange={(event) => setPostalCode(event.target.value)}
+              inputMode="numeric"
+              autoComplete="postal-code"
+              pattern="\d{5}"
+              title="5 chiffres"
+              maxLength={5}
+            />
+          </Field>
+        </div>
       </Panel>
 
       <Panel
         title="Mentions légales"
         description={LEGAL_HINT}
         actions={
-          <StatusBadge tone={settings.legal.legalNoticeIsCustom ? "brand" : "neutral"}>
-            {settings.legal.legalNoticeIsCustom ? "Personnalisées" : "Texte modèle"}
+          <StatusBadge
+            tone={settings.legal.legalNoticeIsCustom ? "brand" : "neutral"}
+          >
+            {settings.legal.legalNoticeIsCustom
+              ? "Personnalisées"
+              : "Texte modèle"}
           </StatusBadge>
         }
       >
@@ -108,9 +126,7 @@ export function SettingsForm({ settings }: { settings: CitySettings }) {
               type="button"
               variant="outline"
               disabled={pending}
-              onClick={() =>
-                save({ legalNotice: "" }, "Texte modèle rétabli.")
-              }
+              onClick={() => save({ legalNotice: "" }, "Texte modèle rétabli.")}
             >
               Rétablir le texte modèle
             </Button>
@@ -122,13 +138,20 @@ export function SettingsForm({ settings }: { settings: CitySettings }) {
         title="Politique de confidentialité"
         description={LEGAL_HINT}
         actions={
-          <StatusBadge tone={settings.legal.privacyPolicyIsCustom ? "brand" : "neutral"}>
-            {settings.legal.privacyPolicyIsCustom ? "Personnalisée" : "Texte modèle"}
+          <StatusBadge
+            tone={settings.legal.privacyPolicyIsCustom ? "brand" : "neutral"}
+          >
+            {settings.legal.privacyPolicyIsCustom
+              ? "Personnalisée"
+              : "Texte modèle"}
           </StatusBadge>
         }
       >
         <div className="space-y-3">
-          <Field label="Texte de la politique de confidentialité" id="privacy_policy">
+          <Field
+            label="Texte de la politique de confidentialité"
+            id="privacy_policy"
+          >
             <Textarea
               rows={14}
               value={privacyPolicy}

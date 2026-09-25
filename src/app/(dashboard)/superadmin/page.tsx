@@ -57,7 +57,12 @@ export default async function SuperAdminPage() {
               {communes.map((commune) => (
                 <TableRow key={commune.id}>
                   <TableCell label="Nom" className="font-medium">
-                    {commune.name}
+                    <span className="flex flex-wrap items-center gap-2 max-lg:justify-end">
+                      {commune.name}
+                      {commune.weatherTemperature === null && (
+                        <StatusBadge tone="warn">Sans météo</StatusBadge>
+                      )}
+                    </span>
                   </TableCell>
                   <TableCell
                     label="Identifiant"

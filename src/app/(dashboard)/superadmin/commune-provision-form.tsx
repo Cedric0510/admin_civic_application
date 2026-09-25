@@ -12,6 +12,7 @@ import {
   COMMUNE_ADMIN_CREDENTIAL_FIELDS,
   newCredentialsError,
 } from "@/lib/credentials";
+import { describeWeatherResult } from "@/lib/weather-messages";
 
 export function CommuneProvisionForm() {
   const router = useRouter();
@@ -28,8 +29,13 @@ export function CommuneProvisionForm() {
     }
     startTransition(async () => {
       try {
-        await provisionCommune(formData);
+        const { weather } = await provisionCommune(formData);
         toast.success("Commune et compte administrateur créés.");
+        const { tone, message } = describeWeatherResult(
+          weather,
+          String(formData.get("communePostalCode") ?? ""),
+        );
+        toast[tone](message);
         router.push("/superadmin");
       } catch (error) {
         toast.error(
@@ -49,9 +55,9 @@ export function CommuneProvisionForm() {
           <Input name="communeName" placeholder="Bessan" required />
         </Field>
         <Field
-          label="Code postal"
+          label="Code postal *"
           id="communePostalCode"
-          hint="Sert à trouver la météo de la commune : plusieurs communes portent le même nom."
+          hint="Sert à trouver la météo de la commune : plusieurs communes portent le même nom. Métropole et Corse."
         >
           <Input
             name="communePostalCode"
@@ -60,6 +66,7 @@ export function CommuneProvisionForm() {
             pattern="\d{5}"
             title="5 chiffres"
             maxLength={5}
+            required
           />
         </Field>
         <Field

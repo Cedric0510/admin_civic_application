@@ -9,7 +9,7 @@ import {
   COMMUNE_ADMIN_CREDENTIAL_FIELDS,
   newCredentialsError,
 } from "@/lib/credentials";
-import type { AppModule, Commune } from "@/lib/types";
+import type { AppModule, Commune, WeatherRefreshResult } from "@/lib/types";
 
 export async function getCommunes(): Promise<Commune[]> {
   return api.get<Commune[]>("/communes");
@@ -39,7 +39,9 @@ export async function setCommuneSuspended(
 // commune reste créée sans administrateur -- signalé explicitement dans le
 // message d'erreur plutôt que masqué, pour qu'un super-admin sache qu'il
 // doit retenter la partie compte plutôt que de recréer la commune.
-export async function provisionCommune(formData: FormData) {
+export async function provisionCommune(
+  formData: FormData,
+): Promise<{ weather: WeatherRefreshResult }> {
   const mismatch = newCredentialsError(
     formData,
     COMMUNE_ADMIN_CREDENTIAL_FIELDS,
@@ -52,11 +54,10 @@ export async function provisionCommune(formData: FormData) {
   const adminEmail = formData.get("adminEmail") as string;
   const adminPassword = formData.get("adminPassword") as string;
 
-  const commune = await api.post<Commune>("/communes", {
-    name,
-    slug,
-    ...(postalCode ? { postalCode } : {}),
-  });
+  const commune = await api.post<Commune & { weather: WeatherRefreshResult }>(
+    "/communes",
+    { name, slug, postalCode },
+  );
 
   try {
     await api.post("/staff", {
@@ -75,6 +76,7 @@ export async function provisionCommune(formData: FormData) {
   }
 
   revalidatePath("/superadmin");
+  return { weather: commune.weather };
 }
 
 // Un super-admin "entre" dans une commune pour la gérer comme s'il en était

@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
+import { refreshCommuneWeather } from "@/app/actions/settings";
 import { getCommunes } from "@/app/actions/superadmin";
 import { PageHeader } from "@/components/layout/page-header";
+import { WeatherStatusPanel } from "@/components/weather-status-panel";
+import { toWeatherSnapshot } from "@/lib/weather-snapshot";
 import { ModulesForm } from "./modules-form";
 import { SuspensionCard } from "./suspension-card";
 
@@ -10,7 +13,9 @@ export default async function CommuneAccessPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const commune = (await getCommunes()).find((candidate) => candidate.id === id);
+  const commune = (await getCommunes()).find(
+    (candidate) => candidate.id === id,
+  );
   if (!commune) notFound();
 
   return (
@@ -30,6 +35,12 @@ export default async function CommuneAccessPage({
           suspendedAt={commune.suspendedAt}
         />
       </section>
+
+      <WeatherStatusPanel
+        postalCode={commune.postalCode}
+        snapshot={toWeatherSnapshot(commune)}
+        refresh={refreshCommuneWeather.bind(null, commune.id)}
+      />
 
       <section className="space-y-3">
         <div>

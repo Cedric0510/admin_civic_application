@@ -9,17 +9,22 @@ const refreshMock = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: refreshMock }),
 }));
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() },
+}));
 
 const { SettingsForm } = await import("./settings-form");
 const { toast } = await import("sonner");
 
-const settings = (overrides: Partial<{
-  legalNoticeIsCustom: boolean;
-  privacyPolicyIsCustom: boolean;
-}> = {}) => ({
+const settings = (
+  overrides: Partial<{
+    legalNoticeIsCustom: boolean;
+    privacyPolicyIsCustom: boolean;
+  }> = {},
+) => ({
   village_name: "Bessan",
   postal_code: "34550",
+  weather: null,
   legal: {
     communeName: "Bessan",
     legalNotice: "## Éditeur\n\nLa commune de Bessan.",
@@ -51,7 +56,9 @@ describe("SettingsForm", () => {
   });
 
   it("says whether each text is the model or the town hall own", () => {
-    render(<SettingsForm settings={settings({ privacyPolicyIsCustom: true })} />);
+    render(
+      <SettingsForm settings={settings({ privacyPolicyIsCustom: true })} />,
+    );
 
     expect(screen.getByText("Texte modèle")).toBeInTheDocument();
     expect(screen.getByText("Personnalisée")).toBeInTheDocument();
@@ -66,9 +73,12 @@ describe("SettingsForm", () => {
   it("sends only the fields that changed, so an untouched model text is never frozen", async () => {
     render(<SettingsForm settings={settings()} />);
 
-    fireEvent.change(screen.getByLabelText("Texte de la politique de confidentialité"), {
-      target: { value: "## Notre politique\n\nTout est chiffré." },
-    });
+    fireEvent.change(
+      screen.getByLabelText("Texte de la politique de confidentialité"),
+      {
+        target: { value: "## Notre politique\n\nTout est chiffré." },
+      },
+    );
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
 
     await waitFor(() =>
@@ -99,16 +109,40 @@ describe("SettingsForm", () => {
     );
   });
 
-  it("can clear the postal code", async () => {
+  it("tells where the weather was found after a new postal code is saved", async () => {
+    updateSettingsMock.mockResolvedValue({
+      status: "ok",
+      placeName: "Ambeyrac",
+      temperature: 29.4,
+      description: "ciel dégagé",
+    });
     render(<SettingsForm settings={settings()} />);
 
     fireEvent.change(screen.getByLabelText("Code postal"), {
-      target: { value: "" },
+      target: { value: "12260" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
 
     await waitFor(() =>
-      expect(updateSettingsMock).toHaveBeenCalledWith({ postalCode: "" }),
+      expect(toast.success).toHaveBeenCalledWith(
+        "Météo trouvée : Ambeyrac, 29,4 °C, ciel dégagé.",
+      ),
+    );
+  });
+
+  it("warns when the new postal code finds no weather", async () => {
+    updateSettingsMock.mockResolvedValue({ status: "not-found" });
+    render(<SettingsForm settings={settings()} />);
+
+    fireEvent.change(screen.getByLabelText("Code postal"), {
+      target: { value: "99999" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    await waitFor(() =>
+      expect(toast.warning).toHaveBeenCalledWith(
+        expect.stringContaining("code postal 99999"),
+      ),
     );
   });
 
@@ -121,7 +155,9 @@ describe("SettingsForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
 
     await waitFor(() =>
-      expect(updateSettingsMock).toHaveBeenCalledWith({ name: "Bessan-sur-Mer" }),
+      expect(updateSettingsMock).toHaveBeenCalledWith({
+        name: "Bessan-sur-Mer",
+      }),
     );
   });
 
@@ -152,6 +188,8 @@ describe("SettingsForm", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
 
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Accès refusé."));
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith("Accès refusé."),
+    );
   });
 });

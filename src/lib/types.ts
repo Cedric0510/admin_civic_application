@@ -108,9 +108,28 @@ export type CommuneLegal = {
   privacyPolicyIsCustom: boolean;
 };
 
+export type WeatherRefreshResult =
+  | {
+      status: "ok";
+      placeName: string;
+      temperature: number;
+      description: string;
+    }
+  | { status: "not-found" }
+  | { status: "not-configured" }
+  | { status: "unavailable" };
+
+export type WeatherSnapshot = {
+  placeName: string | null;
+  temperature: number;
+  description: string | null;
+  updatedAt: string;
+};
+
 export type CitySettings = {
   village_name: string;
   postal_code: string;
+  weather: WeatherSnapshot | null;
   legal: CommuneLegal;
 };
 
@@ -149,6 +168,10 @@ export type Commune = {
   name: string;
   slug: string;
   postalCode: string | null;
+  weatherPlaceName: string | null;
+  weatherTemperature: number | null;
+  weatherDescription: string | null;
+  weatherUpdatedAt: string | null;
   createdAt: string;
   suspendedAt: string | null;
   disabledModules: AppModule[];
