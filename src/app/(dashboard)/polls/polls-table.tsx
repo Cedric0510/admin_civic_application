@@ -88,10 +88,16 @@ export function PollsTable({ polls }: { polls: Poll[] }) {
           );
           return (
             <TableRow key={poll.id}>
-              <TableCell className="max-w-md whitespace-normal font-medium">
+              <TableCell
+                label="Question"
+                className="max-w-md whitespace-normal font-medium"
+              >
                 {poll.question}
               </TableCell>
-              <TableCell className="text-xs text-muted-foreground">
+              <TableCell
+                label="Fenêtre"
+                className="text-xs text-muted-foreground"
+              >
                 {poll.opensAt || poll.closesAt ? (
                   <>
                     {poll.opensAt ? formatDate(poll.opensAt) : "—"}
@@ -102,10 +108,10 @@ export function PollsTable({ polls }: { polls: Poll[] }) {
                   "—"
                 )}
               </TableCell>
-              <TableCell className="text-muted-foreground">
+              <TableCell label="Votes" className="text-muted-foreground">
                 {totalVotes}
               </TableCell>
-              <TableCell>
+              <TableCell label="Statut">
                 {!poll.isActive ? (
                   <StatusBadge tone="neutral">Inactif</StatusBadge>
                 ) : poll.isVotable ? (
@@ -120,9 +126,7 @@ export function PollsTable({ polls }: { polls: Poll[] }) {
                     checked={poll.isActive}
                     disabled={pending}
                     aria-label={`Activer ${poll.question}`}
-                    onCheckedChange={() =>
-                      handleToggle(poll.id, poll.isActive)
-                    }
+                    onCheckedChange={() => handleToggle(poll.id, poll.isActive)}
                   />
                   <IconLink
                     href={`/polls/${poll.id}`}

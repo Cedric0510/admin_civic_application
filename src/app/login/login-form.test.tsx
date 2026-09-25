@@ -1,11 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 const loginMock = vi.fn();
 vi.mock("@/app/actions/auth", () => ({ login: loginMock }));
 
 const { LoginForm } = await import("./login-form");
 const { default: LoginPage } = await import("./page");
+
+afterEach(() => vi.restoreAllMocks());
 
 describe("LoginForm", () => {
   it("offers a forgotten-password link next to the password field", () => {
@@ -20,7 +22,9 @@ describe("LoginForm", () => {
     const { unmount } = render(
       <LoginForm notice={{ tone: "success", text: "Mot de passe modifié." }} />,
     );
-    expect(screen.getByRole("status")).toHaveTextContent("Mot de passe modifié.");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Mot de passe modifié.",
+    );
     unmount();
 
     render(<LoginForm notice={null} />);
@@ -34,7 +38,10 @@ describe("LoginForm", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Accès suspendu.");
   });
 
-  it("keeps the typed address, but not the password, after a failed attempt", async () => {
+  it("keeps the typed address, but not the password, after a failed attempt, without any React warning", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
     loginMock.mockResolvedValue({ error: "Identifiants incorrects." });
     render(<LoginForm notice={null} />);
 
@@ -53,6 +60,7 @@ describe("LoginForm", () => {
       "martine@bessan.fr",
     );
     expect(screen.getByLabelText("Mot de passe")).toHaveValue("");
+    expect(consoleError).not.toHaveBeenCalled();
   });
 
   it("still asks for both credentials", () => {

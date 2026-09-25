@@ -62,18 +62,26 @@ export function CommercesTable({ commerces }: { commerces: Commerce[] }) {
       <TableBody>
         {commerces.map((commerce) => (
           <TableRow key={commerce.id}>
-            <TableCell className="font-medium">{commerce.name}</TableCell>
-            <TableCell>
+            <TableCell label="Nom" className="font-medium">
+              {commerce.name}
+            </TableCell>
+            <TableCell label="Catégorie">
               {commerce.category ? (
                 <Badge variant="outline">{commerce.category}</Badge>
               ) : (
                 <span className="text-sm text-muted-foreground">—</span>
               )}
             </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
+            <TableCell
+              label="Téléphone"
+              className="text-sm text-muted-foreground"
+            >
               {commerce.phone ?? "—"}
             </TableCell>
-            <TableCell className="max-w-48 truncate text-sm text-muted-foreground">
+            <TableCell
+              label="Notes"
+              className="max-w-48 truncate text-sm text-muted-foreground"
+            >
               {commerce.notes ?? "—"}
             </TableCell>
             <TableCell className="text-right">

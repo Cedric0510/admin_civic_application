@@ -5,6 +5,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { api, ApiError } from "@/lib/api/client";
 import { MANAGED_COMMUNE_COOKIE } from "@/lib/api/constants";
+import {
+  COMMUNE_ADMIN_CREDENTIAL_FIELDS,
+  newCredentialsError,
+} from "@/lib/credentials";
 import type { AppModule, Commune } from "@/lib/types";
 
 export async function getCommunes(): Promise<Commune[]> {
@@ -36,6 +40,11 @@ export async function setCommuneSuspended(
 // message d'erreur plutôt que masqué, pour qu'un super-admin sache qu'il
 // doit retenter la partie compte plutôt que de recréer la commune.
 export async function provisionCommune(formData: FormData) {
+  const mismatch = newCredentialsError(
+    formData,
+    COMMUNE_ADMIN_CREDENTIAL_FIELDS,
+  );
+  if (mismatch) throw new Error(mismatch);
   const name = formData.get("communeName") as string;
   const slug = formData.get("communeSlug") as string;
   const adminName = formData.get("adminName") as string;

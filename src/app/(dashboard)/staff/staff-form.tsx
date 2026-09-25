@@ -3,17 +3,27 @@
 import { createStaff } from "@/app/actions/staff";
 import { Field } from "@/components/layout/field";
 import { FormActions } from "@/components/layout/form-actions";
+import { NewCredentialsFields } from "@/components/layout/new-credentials-fields";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
+import {
+  newCredentialsError,
+  STAFF_CREDENTIAL_FIELDS,
+} from "@/lib/credentials";
 
 export function StaffForm() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function handleSubmit(formData: FormData) {
+    const mismatch = newCredentialsError(formData, STAFF_CREDENTIAL_FIELDS);
+    if (mismatch) {
+      toast.error(mismatch);
+      return;
+    }
     startTransition(async () => {
       try {
         await createStaff(formData);
@@ -43,13 +53,7 @@ export function StaffForm() {
         />
       </Field>
 
-      <Field label="Email *" id="email">
-        <Input name="email" type="email" required />
-      </Field>
-
-      <Field label="Mot de passe *" id="password" hint="8 caractères minimum.">
-        <Input name="password" type="password" minLength={8} required />
-      </Field>
+      <NewCredentialsFields names={STAFF_CREDENTIAL_FIELDS} />
 
       <Field
         label="Rôle *"

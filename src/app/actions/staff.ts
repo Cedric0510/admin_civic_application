@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { api } from "@/lib/api/client";
+import {
+  newCredentialsError,
+  STAFF_CREDENTIAL_FIELDS,
+} from "@/lib/credentials";
 import { getManagedCommune } from "@/lib/session";
 import type { StaffMember, StaffRole } from "@/lib/types";
 
@@ -15,6 +19,8 @@ export async function getStaff(): Promise<StaffMember[]> {
 }
 
 export async function createStaff(formData: FormData) {
+  const mismatch = newCredentialsError(formData, STAFF_CREDENTIAL_FIELDS);
+  if (mismatch) throw new Error(mismatch);
   const commune = await getManagedCommune();
   await api.post("/staff", {
     name: formData.get("name") as string,

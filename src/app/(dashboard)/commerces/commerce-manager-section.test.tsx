@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const assignMock = vi.fn();
@@ -15,8 +15,8 @@ const { CommerceManagerSection } = await import("./commerce-manager-section");
 const { toast } = await import("sonner");
 
 const managers = [
-  { id: "c1", email: "martine@boulangerie.fr" },
-  { id: "c2", email: "paul@boulangerie.fr" },
+  { id: "c1", email: "martine@boulangerie.fr", isChief: true },
+  { id: "c2", email: "paul@boulangerie.fr", isChief: false },
 ];
 
 const invitations = [
@@ -54,6 +54,23 @@ describe("CommerceManagerSection", () => {
     expect(
       screen.getByRole("button", { name: "Retirer paul@boulangerie.fr" }),
     ).toBeInTheDocument();
+  });
+
+  it("marks the chief of the commerce, and only the chief", () => {
+    render(
+      <CommerceManagerSection
+        commerceId="shop-1"
+        managers={managers}
+        invitations={[]}
+      />,
+    );
+
+    const chiefRow = screen.getByText("martine@boulangerie.fr").closest("li")!;
+    const collaboratorRow = screen
+      .getByText("paul@boulangerie.fr")
+      .closest("li")!;
+    expect(within(chiefRow).getByText("Chef")).toBeInTheDocument();
+    expect(within(collaboratorRow).queryByText("Chef")).not.toBeInTheDocument();
   });
 
   it("says so when nobody is linked yet, and still offers to add someone", () => {

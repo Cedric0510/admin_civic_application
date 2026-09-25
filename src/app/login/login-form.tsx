@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { login } from "@/app/actions/auth";
 import { AuthAlert, AuthCard } from "@/components/auth-shell";
 import { Button } from "@/components/ui/button";
@@ -14,13 +14,9 @@ export type LoginNotice = {
 };
 
 export function LoginForm({ notice }: { notice: LoginNotice | null }) {
+  const [email, setEmail] = useState("");
   const [state, formAction, pending] = useActionState(
-    async (_: unknown, formData: FormData) => {
-      const result = await login(formData);
-      return result
-        ? { ...result, email: String(formData.get("email") ?? "") }
-        : null;
-    },
+    (_: unknown, formData: FormData) => login(formData),
     null,
   );
 
@@ -37,7 +33,8 @@ export function LoginForm({ notice }: { notice: LoginNotice | null }) {
             type="email"
             required
             autoComplete="email"
-            defaultValue={state?.email}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
             className="h-11"
           />
         </div>

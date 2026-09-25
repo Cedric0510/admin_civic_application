@@ -24,7 +24,10 @@ export default async function SuperAdminPage() {
         title="Communes"
         description="Provisionnement des communes partenaires et de leur premier compte administrateur."
         actions={
-          <Link href="/superadmin/new" className={buttonVariants({ size: "lg" })}>
+          <Link
+            href="/superadmin/new"
+            className={buttonVariants({ size: "lg" })}
+          >
             <Plus size={16} aria-hidden="true" />
             Nouvelle commune
           </Link>
@@ -53,19 +56,30 @@ export default async function SuperAdminPage() {
             <TableBody>
               {communes.map((commune) => (
                 <TableRow key={commune.id}>
-                  <TableCell className="font-medium">{commune.name}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell label="Nom" className="font-medium">
+                    {commune.name}
+                  </TableCell>
+                  <TableCell
+                    label="Identifiant"
+                    className="text-sm text-muted-foreground"
+                  >
                     {commune.slug}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell
+                    label="Créée le"
+                    className="text-sm text-muted-foreground"
+                  >
                     {new Date(commune.createdAt).toLocaleDateString("fr-FR")}
                   </TableCell>
-                  <TableCell>
+                  <TableCell label="Accès">
                     <StatusBadge tone={commune.suspendedAt ? "bad" : "good"}>
                       {commune.suspendedAt ? "Suspendu" : "Actif"}
                     </StatusBadge>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell
+                    label="Modules"
+                    className="text-sm text-muted-foreground"
+                  >
                     {commune.disabledModules.length === 0
                       ? "Tous actifs"
                       : `${commune.disabledModules.length} désactivé${commune.disabledModules.length > 1 ? "s" : ""}`}

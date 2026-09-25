@@ -177,7 +177,9 @@ export type Commerce = {
   notes: string | null;
 };
 
-export type CommerceManager = { id: string; email: string };
+export type LinkedAccount = { id: string; email: string };
+
+export type CommerceManager = LinkedAccount & { isChief: boolean };
 
 export type CommerceInvitation = {
   id: string;
@@ -187,7 +189,7 @@ export type CommerceInvitation = {
 };
 
 export type AddManagerResult =
-  | { status: "linked"; manager: CommerceManager }
+  | { status: "linked"; manager: LinkedAccount }
   | { status: "invited"; invitation: CommerceInvitation };
 
 // Signalements citoyens, version simplifiée : pas de carte, pas de

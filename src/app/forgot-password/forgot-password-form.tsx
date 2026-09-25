@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { MailCheck } from "lucide-react";
 import { requestPasswordReset } from "@/app/actions/auth";
 import { AuthAlert, AuthCard } from "@/components/auth-shell";
@@ -10,11 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function ForgotPasswordForm() {
+  const [email, setEmail] = useState("");
   const [state, formAction, pending] = useActionState(
-    async (_: unknown, formData: FormData) => ({
-      ...(await requestPasswordReset(formData)),
-      email: String(formData.get("email") ?? ""),
-    }),
+    (_: unknown, formData: FormData) => requestPasswordReset(formData),
     null,
   );
 
@@ -57,7 +55,8 @@ export function ForgotPasswordForm() {
             type="email"
             required
             autoComplete="email"
-            defaultValue={state?.email}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
             className="h-11"
           />
         </div>

@@ -93,11 +93,15 @@ export function StaffTable({ staff }: { staff: StaffMember[] }) {
         <TableBody>
           {staff.map((member) => (
             <TableRow key={member.id}>
-              <TableCell>
-                <p className="font-medium">{member.name}</p>
-                <p className="text-xs text-muted-foreground">{member.email}</p>
+              <TableCell label="Nom">
+                <div className="min-w-0">
+                  <p className="font-medium">{member.name}</p>
+                  <p className="break-words text-xs text-muted-foreground">
+                    {member.email}
+                  </p>
+                </div>
               </TableCell>
-              <TableCell>
+              <TableCell label="Rôle">
                 {member.role === "SUPER_ADMIN" ? (
                   <Badge variant="outline">{roleLabels[member.role]}</Badge>
                 ) : (
@@ -115,7 +119,10 @@ export function StaffTable({ staff }: { staff: StaffMember[] }) {
                   />
                 )}
               </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
+              <TableCell
+                label="Depuis"
+                className="text-sm text-muted-foreground"
+              >
                 {new Date(member.createdAt).toLocaleDateString("fr-FR")}
               </TableCell>
               <TableCell className="text-right">

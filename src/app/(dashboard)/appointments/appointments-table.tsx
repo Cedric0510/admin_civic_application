@@ -59,7 +59,8 @@ export function AppointmentsTable({
 
   function applyFilter(key: string, value: string) {
     const params = new URLSearchParams();
-    if (key !== "service" && currentService) params.set("service", currentService);
+    if (key !== "service" && currentService)
+      params.set("service", currentService);
     if (key !== "date" && currentDate) params.set("date", currentDate);
     if (value) params.set(key, value);
     router.push(`${pathname}?${params.toString()}`);
@@ -137,11 +138,8 @@ export function AppointmentsTable({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Rendez-vous</TableHead>
               <TableHead>Habitant</TableHead>
-              <TableHead>Service</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Agent</TableHead>
-              <TableHead>Message</TableHead>
               <TableHead>Statut</TableHead>
               <TableHead className="w-16 text-right">Action</TableHead>
             </TableRow>
@@ -149,24 +147,37 @@ export function AppointmentsTable({
           <TableBody>
             {appointments.map((appt) => (
               <TableRow key={appt.id}>
-                <TableCell className="font-medium">{appt.citizen.email}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">{appt.service.name}</Badge>
+                <TableCell label="Rendez-vous">
+                  <div className="space-y-1 max-lg:flex max-lg:flex-col max-lg:items-end">
+                    <p className="whitespace-nowrap font-medium">
+                      {formatCompactDateTime(appt.startsAt)}
+                    </p>
+                    <Badge variant="outline">{appt.service.name}</Badge>
+                    {appt.agent && (
+                      <p className="text-xs text-muted-foreground">
+                        Avec {appt.agent.name}
+                      </p>
+                    )}
+                  </div>
                 </TableCell>
-                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                  {formatCompactDateTime(appt.startsAt)}
+                <TableCell label="Habitant" className="max-w-xs">
+                  <div className="min-w-0">
+                    <p
+                      className="break-words text-sm font-medium lg:truncate"
+                      title={appt.citizen.email}
+                    >
+                      {appt.citizen.email}
+                    </p>
+                    <p
+                      title={appt.message ?? undefined}
+                      className="line-clamp-2 break-words text-sm text-muted-foreground"
+                    >
+                      {appt.message ?? "—"}
+                    </p>
+                  </div>
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {appt.agent?.name ?? "—"}
-                </TableCell>
-                <TableCell
-                  title={appt.message ?? undefined}
-                  className="max-w-[14rem] truncate text-sm text-muted-foreground"
-                >
-                  {appt.message ?? "—"}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
+                <TableCell label="Statut">
+                  <div className="flex flex-col items-start gap-1.5 max-lg:items-end">
                     <StatusBadge tone={statusTones[appt.status]}>
                       {statusLabels[appt.status]}
                     </StatusBadge>

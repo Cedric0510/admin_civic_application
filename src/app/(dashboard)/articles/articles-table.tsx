@@ -65,15 +65,20 @@ export function ArticlesTable({
       <TableBody>
         {articles.map((article) => (
           <TableRow key={article.id}>
-            <TableCell className="font-medium">{article.title}</TableCell>
-            <TableCell>
+            <TableCell label="Titre" className="font-medium">
+              {article.title}
+            </TableCell>
+            <TableCell label="Catégorie">
               {article.category ? (
                 <Badge variant="outline">{article.category}</Badge>
               ) : (
                 <span className="text-sm text-muted-foreground">—</span>
               )}
             </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
+            <TableCell
+              label="Publié le"
+              className="text-sm text-muted-foreground"
+            >
               {new Date(article.publishedAt).toLocaleDateString("fr-FR", {
                 day: "2-digit",
                 month: "long",

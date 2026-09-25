@@ -3,16 +3,29 @@
 import { provisionCommune } from "@/app/actions/superadmin";
 import { Field } from "@/components/layout/field";
 import { FormActions } from "@/components/layout/form-actions";
+import { NewCredentialsFields } from "@/components/layout/new-credentials-fields";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
+import {
+  COMMUNE_ADMIN_CREDENTIAL_FIELDS,
+  newCredentialsError,
+} from "@/lib/credentials";
 
 export function CommuneProvisionForm() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function handleSubmit(formData: FormData) {
+    const mismatch = newCredentialsError(
+      formData,
+      COMMUNE_ADMIN_CREDENTIAL_FIELDS,
+    );
+    if (mismatch) {
+      toast.error(mismatch);
+      return;
+    }
     startTransition(async () => {
       try {
         await provisionCommune(formData);
@@ -63,17 +76,10 @@ export function CommuneProvisionForm() {
             required
           />
         </Field>
-        <Field label="Email *" id="adminEmail">
-          <Input
-            name="adminEmail"
-            type="email"
-            placeholder="mairie@bessan.fr"
-            required
-          />
-        </Field>
-        <Field label="Mot de passe *" id="adminPassword" hint="8 caractères minimum.">
-          <Input name="adminPassword" type="password" minLength={8} required />
-        </Field>
+        <NewCredentialsFields
+          names={COMMUNE_ADMIN_CREDENTIAL_FIELDS}
+          emailPlaceholder="mairie@bessan.fr"
+        />
       </fieldset>
 
       <FormActions

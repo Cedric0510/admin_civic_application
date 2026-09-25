@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const requestMock = vi.fn();
 vi.mock("@/app/actions/auth", () => ({
@@ -16,6 +16,7 @@ function submit(email: string) {
 }
 
 beforeEach(() => requestMock.mockReset());
+afterEach(() => vi.restoreAllMocks());
 
 describe("ForgotPasswordForm", () => {
   it("asks for the account address and offers a way back to the login page", () => {
@@ -44,7 +45,10 @@ describe("ForgotPasswordForm", () => {
     expect(data.get("email")).toBe("martine@bessan.fr");
   });
 
-  it("shows the error and keeps the form when the request fails", async () => {
+  it("shows the error and keeps the form when the request fails, without any React warning", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
     requestMock.mockResolvedValue({
       error: "Trop de demandes. Réessayez dans une minute.",
     });
@@ -60,5 +64,6 @@ describe("ForgotPasswordForm", () => {
         "martine@bessan.fr",
       ),
     );
+    expect(consoleError).not.toHaveBeenCalled();
   });
 });

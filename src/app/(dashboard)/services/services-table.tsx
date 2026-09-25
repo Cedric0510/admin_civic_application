@@ -61,15 +61,20 @@ export function ServicesTable({ services }: { services: Service[] }) {
       <TableBody>
         {services.map((service) => (
           <TableRow key={service.id}>
-            <TableCell className="font-medium">{service.name}</TableCell>
-            <TableCell>
+            <TableCell label="Nom" className="font-medium">
+              {service.name}
+            </TableCell>
+            <TableCell label="Catégorie">
               {service.category ? (
                 <Badge variant="outline">{service.category}</Badge>
               ) : (
                 <span className="text-sm text-muted-foreground">—</span>
               )}
             </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
+            <TableCell
+              label="Téléphone"
+              className="text-sm text-muted-foreground"
+            >
               {service.phone ?? "—"}
             </TableCell>
             <TableCell className="text-right">

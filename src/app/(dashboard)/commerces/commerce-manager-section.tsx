@@ -5,6 +5,7 @@ import {
   cancelCommerceInvitation,
   unassignCommerceManager,
 } from "@/app/actions/commerces";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -110,7 +111,9 @@ export function CommerceManagerSection({
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground">
         Si la personne a déjà un compte, elle est associée tout de suite ;
-        sinon elle reçoit par e-mail une invitation pour créer son compte.
+        sinon elle reçoit par e-mail une invitation pour créer son compte. Le
+        premier compte associé est le chef du commerce : il peut lui-même
+        ajouter ou retirer des collaborateurs depuis l&apos;application.
       </p>
 
       {managers.length === 0 ? (
@@ -127,6 +130,7 @@ export function CommerceManagerSection({
               <span className="flex items-center gap-2 text-sm text-foreground">
                 <UserRound size={16} className="text-muted-foreground" />
                 {manager.email}
+                {manager.isChief && <Badge variant="outline">Chef</Badge>}
               </span>
               <Button
                 type="button"
