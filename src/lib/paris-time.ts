@@ -57,6 +57,17 @@ export function formatDateTime(instant: string | Date): string {
   });
 }
 
+export function formatCompactDateTime(instant: string | Date): string {
+  return new Date(instant).toLocaleString("fr-FR", {
+    timeZone: TIME_ZONE,
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function formatLongDate(instant: string | Date): string {
   return new Date(instant).toLocaleDateString("fr-FR", {
     timeZone: TIME_ZONE,

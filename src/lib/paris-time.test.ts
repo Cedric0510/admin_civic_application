@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   addDays,
+  formatCompactDateTime,
   formatDayMonth,
   formatLongDate,
   formatShortDate,
@@ -31,6 +32,13 @@ describe("paris-time", () => {
   it("writes the short date with the Paris day", () => {
     expect(formatShortDate("2026-09-24T12:00:00.000Z")).toBe("24/09/2026");
     expect(formatShortDate("2026-09-24T22:30:00.000Z")).toBe("25/09/2026");
+  });
+
+  it("writes a compact date and time in the Paris timezone", () => {
+    const text = formatCompactDateTime("2026-09-29T07:00:00.000Z");
+
+    expect(text).toContain("29");
+    expect(text).toContain("09:00");
   });
 
   it("formats a time in Paris time", () => {

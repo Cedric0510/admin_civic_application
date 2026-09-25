@@ -25,7 +25,7 @@ import { CalendarDays } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { formatDateTime } from "@/lib/paris-time";
+import { formatCompactDateTime } from "@/lib/paris-time";
 import type { Appointment, AppointmentStatus } from "@/lib/types";
 
 const statusLabels: Record<AppointmentStatus, string> = {
@@ -153,15 +153,15 @@ export function AppointmentsTable({
                 <TableCell>
                   <Badge variant="outline">{appt.service.name}</Badge>
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground capitalize">
-                  {formatDateTime(appt.startsAt)}
+                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                  {formatCompactDateTime(appt.startsAt)}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {appt.agent?.name ?? "—"}
                 </TableCell>
                 <TableCell
                   title={appt.message ?? undefined}
-                  className="max-w-xs truncate text-sm text-muted-foreground"
+                  className="max-w-[14rem] truncate text-sm text-muted-foreground"
                 >
                   {appt.message ?? "—"}
                 </TableCell>
