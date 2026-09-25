@@ -47,11 +47,16 @@ export async function provisionCommune(formData: FormData) {
   if (mismatch) throw new Error(mismatch);
   const name = formData.get("communeName") as string;
   const slug = formData.get("communeSlug") as string;
+  const postalCode = String(formData.get("communePostalCode") ?? "").trim();
   const adminName = formData.get("adminName") as string;
   const adminEmail = formData.get("adminEmail") as string;
   const adminPassword = formData.get("adminPassword") as string;
 
-  const commune = await api.post<Commune>("/communes", { name, slug });
+  const commune = await api.post<Commune>("/communes", {
+    name,
+    slug,
+    ...(postalCode ? { postalCode } : {}),
+  });
 
   try {
     await api.post("/staff", {

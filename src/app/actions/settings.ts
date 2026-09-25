@@ -9,13 +9,19 @@ export async function getSettings(): Promise<CitySettings | null> {
   const commune = await getManagedCommune();
   const query = commune ? `?communeId=${commune.id}` : "";
   try {
-    const result = await api.get<{ name: string; slug: string }>(
-      `/communes/me${query}`,
-    );
+    const result = await api.get<{
+      name: string;
+      slug: string;
+      postalCode: string | null;
+    }>(`/communes/me${query}`);
     const legal = await api.get<CommuneLegal>(
       `/communes/${encodeURIComponent(result.slug)}/legal`,
     );
-    return { village_name: result.name, legal };
+    return {
+      village_name: result.name,
+      postal_code: result.postalCode ?? "",
+      legal,
+    };
   } catch {
     return null;
   }
@@ -23,6 +29,7 @@ export async function getSettings(): Promise<CitySettings | null> {
 
 export type SettingsChanges = {
   name?: string;
+  postalCode?: string;
   legalNotice?: string;
   privacyPolicy?: string;
 };

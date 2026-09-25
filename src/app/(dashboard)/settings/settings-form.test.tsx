@@ -19,6 +19,7 @@ const settings = (overrides: Partial<{
   privacyPolicyIsCustom: boolean;
 }> = {}) => ({
   village_name: "Bessan",
+  postal_code: "34550",
   legal: {
     communeName: "Bessan",
     legalNotice: "## Éditeur\n\nLa commune de Bessan.",
@@ -77,6 +78,38 @@ describe("SettingsForm", () => {
     );
     await waitFor(() => expect(toast.success).toHaveBeenCalled());
     expect(refreshMock).toHaveBeenCalled();
+  });
+
+  it("shows the postal code that locates the commune for the weather", () => {
+    render(<SettingsForm settings={settings()} />);
+
+    expect(screen.getByLabelText("Code postal")).toHaveValue("34550");
+  });
+
+  it("saves a new postal code on its own", async () => {
+    render(<SettingsForm settings={settings()} />);
+
+    fireEvent.change(screen.getByLabelText("Code postal"), {
+      target: { value: "12260" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    await waitFor(() =>
+      expect(updateSettingsMock).toHaveBeenCalledWith({ postalCode: "12260" }),
+    );
+  });
+
+  it("can clear the postal code", async () => {
+    render(<SettingsForm settings={settings()} />);
+
+    fireEvent.change(screen.getByLabelText("Code postal"), {
+      target: { value: "" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    await waitFor(() =>
+      expect(updateSettingsMock).toHaveBeenCalledWith({ postalCode: "" }),
+    );
   });
 
   it("saves a new commune name on its own, trimmed", async () => {

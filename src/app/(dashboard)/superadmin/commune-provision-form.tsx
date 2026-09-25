@@ -49,6 +49,20 @@ export function CommuneProvisionForm() {
           <Input name="communeName" placeholder="Bessan" required />
         </Field>
         <Field
+          label="Code postal"
+          id="communePostalCode"
+          hint="Sert à trouver la météo de la commune : plusieurs communes portent le même nom."
+        >
+          <Input
+            name="communePostalCode"
+            placeholder="34550"
+            inputMode="numeric"
+            pattern="\d{5}"
+            title="5 chiffres"
+            maxLength={5}
+          />
+        </Field>
+        <Field
           label="Identifiant (slug) *"
           id="communeSlug"
           hint="Minuscules, chiffres et tirets uniquement. Utilisé par l'application mobile pour identifier la commune."

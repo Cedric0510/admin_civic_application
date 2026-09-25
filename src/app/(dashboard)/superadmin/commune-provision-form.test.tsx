@@ -20,6 +20,7 @@ function fill(label: string, value: string) {
 function fillEverything(overrides: Record<string, string> = {}) {
   const values: Record<string, string> = {
     "Identifiant (slug) *": "bessan",
+    "Code postal": "34550",
     "Email *": "mairie@bessan.fr",
     "Confirmer l'email *": "mairie@bessan.fr",
     "Mot de passe *": "Un-mot-de-passe",
@@ -48,6 +49,17 @@ describe("CommuneProvisionForm", () => {
     const data = provisionMock.mock.calls[0][0] as FormData;
     expect(data.get("adminEmail")).toBe("mairie@bessan.fr");
     expect(data.get("adminPassword")).toBe("Un-mot-de-passe");
+  });
+
+  it("sends the postal code that locates the commune for the weather", async () => {
+    render(<CommuneProvisionForm />);
+
+    fillEverything({ "Code postal": "12260" });
+    fireEvent.click(screen.getByRole("button", { name: "Provisionner" }));
+
+    await waitFor(() => expect(provisionMock).toHaveBeenCalledTimes(1));
+    const data = provisionMock.mock.calls[0][0] as FormData;
+    expect(data.get("communePostalCode")).toBe("12260");
   });
 
   it("creates neither the commune nor the account when the passwords differ", async () => {

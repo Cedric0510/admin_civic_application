@@ -19,6 +19,7 @@ export function SettingsForm({ settings }: { settings: CitySettings }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [name, setName] = useState(settings.village_name);
+  const [postalCode, setPostalCode] = useState(settings.postal_code);
   const [legalNotice, setLegalNotice] = useState(settings.legal.legalNotice);
   const [privacyPolicy, setPrivacyPolicy] = useState(
     settings.legal.privacyPolicy,
@@ -26,6 +27,9 @@ export function SettingsForm({ settings }: { settings: CitySettings }) {
 
   const changes: SettingsChanges = {
     ...(name.trim() !== settings.village_name ? { name: name.trim() } : {}),
+    ...(postalCode.trim() !== settings.postal_code
+      ? { postalCode: postalCode.trim() }
+      : {}),
     ...(legalNotice !== settings.legal.legalNotice ? { legalNotice } : {}),
     ...(privacyPolicy !== settings.legal.privacyPolicy ? { privacyPolicy } : {}),
   };
@@ -57,12 +61,27 @@ export function SettingsForm({ settings }: { settings: CitySettings }) {
         <Field
           label="Nom de la commune"
           id="village_name"
-          hint="Affiché sur l'accueil de l'application et utilisé pour la météo."
+          hint="Affiché sur l'accueil de l'application."
         >
           <Input
             value={name}
             onChange={(event) => setName(event.target.value)}
             required
+          />
+        </Field>
+        <Field
+          label="Code postal"
+          id="postal_code"
+          hint="Sert à trouver la météo de votre commune : plusieurs communes portent le même nom."
+        >
+          <Input
+            value={postalCode}
+            onChange={(event) => setPostalCode(event.target.value)}
+            inputMode="numeric"
+            autoComplete="postal-code"
+            pattern="\d{5}"
+            title="5 chiffres"
+            maxLength={5}
           />
         </Field>
       </Panel>

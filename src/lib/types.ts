@@ -110,6 +110,7 @@ export type CommuneLegal = {
 
 export type CitySettings = {
   village_name: string;
+  postal_code: string;
   legal: CommuneLegal;
 };
 
@@ -147,6 +148,7 @@ export type Commune = {
   id: string;
   name: string;
   slug: string;
+  postalCode: string | null;
   createdAt: string;
   suspendedAt: string | null;
   disabledModules: AppModule[];
