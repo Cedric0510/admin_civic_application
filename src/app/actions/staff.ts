@@ -18,6 +18,27 @@ export async function getStaff(): Promise<StaffMember[]> {
   return api.get<StaffMember[]>(`/staff?communeId=${commune.id}`);
 }
 
+export async function getSuperAdmins(): Promise<StaffMember[]> {
+  return api.get<StaffMember[]>("/staff?role=SUPER_ADMIN");
+}
+
+export async function createSuperAdmin(formData: FormData) {
+  const mismatch = newCredentialsError(formData, STAFF_CREDENTIAL_FIELDS);
+  if (mismatch) throw new Error(mismatch);
+  await api.post("/staff", {
+    name: formData.get("name") as string,
+    email: formData.get("email") as string,
+    password: formData.get("password") as string,
+    role: "SUPER_ADMIN",
+  });
+  revalidatePath("/superadmin/admins");
+}
+
+export async function deleteSuperAdmin(id: string) {
+  await api.delete(`/staff/${id}`);
+  revalidatePath("/superadmin/admins");
+}
+
 export async function createStaff(formData: FormData) {
   const mismatch = newCredentialsError(formData, STAFF_CREDENTIAL_FIELDS);
   if (mismatch) throw new Error(mismatch);

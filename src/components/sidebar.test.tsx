@@ -42,11 +42,17 @@ describe("Sidebar", () => {
     expect(
       screen.queryByRole("link", { name: "Prospection" }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Super-administrateurs" }),
+    ).not.toBeInTheDocument();
     unmount();
 
     render(<Sidebar staff={staff("SUPER_ADMIN", { commune: null })} managedCommune={null} />);
     expect(screen.getByRole("link", { name: "Communes" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Prospection" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Super-administrateurs" }),
+    ).toBeInTheDocument();
   });
 
   it("hides the entries of the modules switched off for the commune, and the groups left empty", () => {

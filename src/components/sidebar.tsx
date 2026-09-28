@@ -19,6 +19,7 @@ import {
   Landmark,
   MapPin,
   MessageSquareText,
+  ShieldCheck,
   Target,
   Menu,
   X,
@@ -60,6 +61,11 @@ function navGroups(
     ...(role === "SUPER_ADMIN"
       ? [
           { href: "/superadmin", label: "Communes", icon: Building2 },
+          {
+            href: "/superadmin/admins",
+            label: "Super-administrateurs",
+            icon: ShieldCheck,
+          },
           {
             href: "/superadmin/prospects",
             label: "Prospection",
