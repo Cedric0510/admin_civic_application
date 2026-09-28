@@ -19,6 +19,7 @@ import {
   Landmark,
   MapPin,
   MessageSquareText,
+  Target,
   Menu,
   X,
 } from "lucide-react";
@@ -57,7 +58,14 @@ function navGroups(
         ]
       : []),
     ...(role === "SUPER_ADMIN"
-      ? [{ href: "/superadmin", label: "Communes", icon: Building2 }]
+      ? [
+          { href: "/superadmin", label: "Communes", icon: Building2 },
+          {
+            href: "/superadmin/prospects",
+            label: "Prospection",
+            icon: Target,
+          },
+        ]
       : []),
   ];
 

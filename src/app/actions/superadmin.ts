@@ -9,10 +9,19 @@ import {
   COMMUNE_ADMIN_CREDENTIAL_FIELDS,
   newCredentialsError,
 } from "@/lib/credentials";
-import type { AppModule, Commune, WeatherRefreshResult } from "@/lib/types";
+import type {
+  AppModule,
+  Commune,
+  CommuneProspect,
+  WeatherRefreshResult,
+} from "@/lib/types";
 
 export async function getCommunes(): Promise<Commune[]> {
   return api.get<Commune[]>("/communes");
+}
+
+export async function getCommuneProspects(): Promise<CommuneProspect[]> {
+  return api.get<CommuneProspect[]>("/communes/prospects");
 }
 
 export async function setCommuneModules(

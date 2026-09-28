@@ -178,6 +178,14 @@ export type Commune = {
   disabledModules: AppModule[];
 };
 
+export type CommuneProspect = {
+  id: string;
+  postalCode: string;
+  searchCount: number;
+  firstSearchedAt: string;
+  lastSearchedAt: string;
+};
+
 export type StaffRole = "AGENT" | "ADMINISTRATEUR" | "SUPER_ADMIN";
 
 export type StaffMember = {
