@@ -35,5 +35,11 @@ export function describeWeatherResult(
         message:
           "Le service météo ne répond pas. Réessayez dans quelques minutes.",
       };
+    case "module-disabled":
+      return {
+        tone: "warning",
+        message:
+          "Le module Météo est désactivé pour cette commune : réactivez-le dans Communes pour retrouver la météo.",
+      };
   }
 }

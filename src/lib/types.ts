@@ -117,7 +117,8 @@ export type WeatherRefreshResult =
     }
   | { status: "not-found" }
   | { status: "not-configured" }
-  | { status: "unavailable" };
+  | { status: "unavailable" }
+  | { status: "module-disabled" };
 
 export type WeatherSnapshot = {
   placeName: string | null;

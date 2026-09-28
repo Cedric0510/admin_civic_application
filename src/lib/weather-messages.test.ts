@@ -47,6 +47,13 @@ describe("describeWeatherResult", () => {
     expect(notice.tone).toBe("warning");
     expect(notice.message).toContain("Réessayez");
   });
+
+  it("points at the module toggle when the commune switched weather off", () => {
+    const notice = describeWeatherResult({ status: "module-disabled" });
+
+    expect(notice.tone).toBe("warning");
+    expect(notice.message).toContain("désactivé");
+  });
 });
 
 describe("formatTemperature", () => {
