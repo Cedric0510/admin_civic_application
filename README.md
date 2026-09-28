@@ -14,6 +14,10 @@ npm run dev                    # http://localhost:3000
 
 Tests : `npm test` ; contrôle du code : `npm run lint` ; build de production : `npm run build`.
 
+## Mise en production
+
+`output: "standalone"` (`next.config.ts`) : le `Dockerfile` construit une image minimale (`node server.js`, utilisateur non-root, `HEALTHCHECK` sur `/login`). Aucun `.env` dans l'image : `API_URL` (adresse interne de `civic_api`) est fourni à l'exécution par `docker-compose.prod.yml` (voir `../deploy/README.md`, avec `civic_api`). Vérifié en local : le conteneur joint `civic_api` par son nom Docker et une connexion réelle fonctionne.
+
 ## Fonctionnement
 
 - **Aucune logique d'autorisation ici** : les Server Actions (`src/app/actions/`) relaient les appels à `civic_api`, qui décide seule des droits et du cloisonnement par commune. Le jeton est dans un cookie `httpOnly`.
