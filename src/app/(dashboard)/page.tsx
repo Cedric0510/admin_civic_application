@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, ServerCrash } from "lucide-react";
+import { Building2, Handshake, ServerCrash } from "lucide-react";
 import { ApiError } from "@/lib/api/client";
 import { formatLongDate } from "@/lib/paris-time";
 import { getCurrentStaff, getManagedCommune } from "@/lib/session";
@@ -122,6 +122,7 @@ export default async function DashboardPage({
 
       {(overview.appointments || overview.reports) && (
         <StatsSection
+          icon={Handshake}
           title="Relation avec les habitants"
           description="Rapidité de vos réponses et volume de demandes."
         >

@@ -1,4 +1,4 @@
-import { CalendarClock, TriangleAlert } from "lucide-react";
+import { CalendarClock, ListChecks, TriangleAlert } from "lucide-react";
 import type { AppointmentStats, ReportStats } from "@/lib/types";
 import {
   pluralize,
@@ -24,7 +24,7 @@ export function TodoSection({
   if (!appointments && !reports) return null;
 
   return (
-    <StatsSection title="À traiter maintenant">
+    <StatsSection icon={ListChecks} title="À traiter maintenant">
       <div
         className={`grid grid-cols-1 gap-4 ${appointments && reports ? "md:grid-cols-2" : ""}`}
       >

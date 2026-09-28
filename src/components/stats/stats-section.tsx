@@ -1,23 +1,30 @@
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { IconTile } from "./kpi-card";
 
 export function StatsSection({
+  icon,
   title,
   description,
   children,
 }: {
+  icon?: LucideIcon;
   title: string;
   description?: string;
   children: React.ReactNode;
 }) {
   return (
     <section className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold tracking-tight text-slate-900">
-          {title}
-        </h2>
-        {description && (
-          <p className="mt-0.5 text-sm text-slate-500">{description}</p>
-        )}
+      <div className="flex items-start gap-3">
+        {icon && <IconTile icon={icon} tone="brand" />}
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+            {title}
+          </h2>
+          {description && (
+            <p className="mt-0.5 text-sm text-slate-500">{description}</p>
+          )}
+        </div>
       </div>
       {children}
     </section>

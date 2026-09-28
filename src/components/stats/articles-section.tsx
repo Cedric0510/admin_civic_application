@@ -1,3 +1,4 @@
+import { Newspaper } from "lucide-react";
 import type { ArticleStats } from "@/lib/types";
 import { countTrend, formatNumber, pluralize } from "@/lib/stats-format";
 import { DailyBars } from "./daily-bars";
@@ -15,6 +16,7 @@ export function ArticlesSection({
 
   return (
     <StatsSection
+      icon={Newspaper}
       title="Actualités"
       description="Une lecture correspond à un article ouvert dans l'application."
     >

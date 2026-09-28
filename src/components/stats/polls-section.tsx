@@ -1,3 +1,4 @@
+import { BarChart3 } from "lucide-react";
 import type { PollParticipation } from "@/lib/types";
 import { pluralize } from "@/lib/stats-format";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ function PollRow({ poll }: { poll: PollParticipation }) {
 export function PollsSection({ polls }: { polls: PollParticipation[] }) {
   return (
     <StatsSection
+      icon={BarChart3}
       title="Sondages"
       description="Part des habitants pouvant voter (arrivés depuis plus d'une semaine) qui ont répondu."
     >

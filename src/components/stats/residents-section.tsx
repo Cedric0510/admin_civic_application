@@ -1,3 +1,4 @@
+import { Users } from "lucide-react";
 import type { CitizenStats } from "@/lib/types";
 import { countTrend, pluralize } from "@/lib/stats-format";
 import { DailyBars } from "./daily-bars";
@@ -13,6 +14,7 @@ export function ResidentsSection({
 }) {
   return (
     <StatsSection
+      icon={Users}
       title="Habitants"
       description="Les comptes rattachés à votre commune dans l'application."
     >
