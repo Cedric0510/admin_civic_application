@@ -194,8 +194,10 @@ export function AgendaGrid({ week }: { week: AgendaWeek }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
-        <span className="font-medium">Toute la semaine</span>
-        {buttonsFor("Toute la semaine", {
+        <span className="font-medium">
+          Semaine (lundi-vendredi, hors week-end)
+        </span>
+        {buttonsFor("Lundi à vendredi", {
           scope: "WEEK",
           date: week.weekStart,
         })}
