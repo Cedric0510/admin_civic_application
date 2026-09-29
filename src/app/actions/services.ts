@@ -41,6 +41,15 @@ export async function getServiceAgents(id: string): Promise<ServiceAgent[]> {
   return api.get<ServiceAgent[]>(`/services/${id}/agents`);
 }
 
+// Sens inverse de getServiceAgents, en une seule requête plutôt que de
+// lister tous les services puis interroger chacun -- c'est cette seconde
+// approche qui multipliait les appels sur la page Agenda.
+export async function getAgentServices(
+  staffMemberId: string,
+): Promise<{ id: string; name: string }[]> {
+  return api.get(`/services/for-agent/${staffMemberId}`);
+}
+
 export async function setServiceAgents(id: string, staffMemberIds: string[]) {
   await api.put(`/services/${id}/agents`, { staffMemberIds });
   revalidatePath(`/services/${id}/edit`);

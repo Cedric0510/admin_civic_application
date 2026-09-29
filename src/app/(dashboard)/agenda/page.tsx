@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getAgendaWeek } from "@/app/actions/agenda";
-import { getServiceAgents, getServices } from "@/app/actions/services";
+import { getAgentServices } from "@/app/actions/services";
 import { getStaff } from "@/app/actions/staff";
 import { PageHeader } from "@/components/layout/page-header";
 import { Panel } from "@/components/layout/panel";
@@ -60,15 +60,9 @@ export default async function AgendaPage({
   // Un agent n'apparaît dans l'agenda des habitants que pour les services où
   // il est affilié (page Services) : le rappeler ici évite d'avoir à aller
   // vérifier service par service pour savoir à quoi correspond ce planning.
-  const services = await getServices();
-  const agentsByService = await Promise.all(
-    services.map((service) => getServiceAgents(service.id)),
+  const agentServiceNames = (await getAgentServices(agentId)).map(
+    (service) => service.name,
   );
-  const agentServiceNames = services
-    .filter((_, index) =>
-      agentsByService[index].some((member) => member.id === agentId),
-    )
-    .map((service) => service.name);
 
   return (
     <div className="space-y-6">
