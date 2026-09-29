@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getAgendaWeek } from "@/app/actions/agenda";
+import { getServiceAgents, getServices } from "@/app/actions/services";
 import { getStaff } from "@/app/actions/staff";
 import { PageHeader } from "@/components/layout/page-header";
 import { Panel } from "@/components/layout/panel";
@@ -56,6 +57,19 @@ export default async function AgendaPage({
   const view = await getAgendaWeek(weekStart, agentId);
   const isSelf = agentId === staff.id;
 
+  // Un agent n'apparaît dans l'agenda des habitants que pour les services où
+  // il est affilié (page Services) : le rappeler ici évite d'avoir à aller
+  // vérifier service par service pour savoir à quoi correspond ce planning.
+  const services = await getServices();
+  const agentsByService = await Promise.all(
+    services.map((service) => getServiceAgents(service.id)),
+  );
+  const agentServiceNames = services
+    .filter((_, index) =>
+      agentsByService[index].some((member) => member.id === agentId),
+    )
+    .map((service) => service.name);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -109,6 +123,28 @@ export default async function AgendaPage({
           ))}
         </div>
       )}
+
+      <p className="text-sm text-muted-foreground">
+        {agentServiceNames.length > 0 ? (
+          <>
+            Ce planning correspond {agentServiceNames.length > 1 ? "aux services" : "au service"} :{" "}
+            <span className="font-medium text-foreground">
+              {agentServiceNames.join(", ")}
+            </span>
+            .
+          </>
+        ) : (
+          <>
+            Cet agent n&apos;est affilié à aucun service : ce planning
+            n&apos;apparaît sur aucune prise de rendez-vous des habitants.
+            Rattachez-le depuis la{" "}
+            <Link href="/services" className="font-medium text-brand-600 underline">
+              page Services
+            </Link>
+            .
+          </>
+        )}
+      </p>
 
       <Panel>
         <AgendaGrid key={`${agentId}-${weekStart}`} week={view} />
