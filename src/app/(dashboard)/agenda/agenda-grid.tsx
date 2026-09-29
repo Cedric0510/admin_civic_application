@@ -8,7 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatDayMonth, formatTime, parisDate, parisHour } from "@/lib/paris-time";
 import { Ban, Check, RotateCcw } from "lucide-react";
-import { useTransition } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { AgendaWeek, AvailabilityState } from "@/lib/types";
 
@@ -68,18 +68,23 @@ function RuleButtons({
 }
 
 export function AgendaGrid({ week }: { week: AgendaWeek }) {
-  const [pending, startTransition] = useTransition();
+  // Volontairement pas useTransition : son état pending reste lié au cycle
+  // de revalidation de Next.js (revalidatePath dans l'action serveur), qui
+  // peut occasionnellement traîner bien après que la requête elle-même a
+  // abouti -- la grille restait alors désactivée jusqu'à un changement de
+  // page. Un état manuel garantit que le blocage se lève dès que l'appel
+  // réseau se termine, quoi qu'il arrive ensuite côté revalidation.
+  const [pending, setPending] = useState(false);
 
   function run(action: () => Promise<void>) {
-    startTransition(async () => {
-      try {
-        await action();
-      } catch (error) {
+    setPending(true);
+    action()
+      .catch((error) => {
         toast.error(
           error instanceof Error ? error.message : "Une erreur est survenue.",
         );
-      }
-    });
+      })
+      .finally(() => setPending(false));
   }
 
   function targetOf(scope: Scope): AvailabilityTarget {

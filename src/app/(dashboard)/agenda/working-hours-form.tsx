@@ -3,7 +3,7 @@
 import { saveWorkingHours } from "@/app/actions/agenda";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { WorkingHoursRange } from "@/lib/types";
 
@@ -30,7 +30,10 @@ export function WorkingHoursForm({
   workingHours: WorkingHoursRange[];
 }) {
   const [ranges, setRanges] = useState(workingHours);
-  const [pending, startTransition] = useTransition();
+  // Pas useTransition ici non plus, même raison que AgendaGrid : son
+  // pending reste lié à la revalidation Next.js déclenchée par l'action
+  // serveur, qui peut traîner après que la sauvegarde a réellement abouti.
+  const [pending, setPending] = useState(false);
 
   function update(target: WorkingHoursRange, changes: Partial<WorkingHoursRange>) {
     setRanges((current) =>
@@ -41,16 +44,15 @@ export function WorkingHoursForm({
   }
 
   function handleSave() {
-    startTransition(async () => {
-      try {
-        await saveWorkingHours(staffMemberId, ranges);
-        toast.success("Horaires habituels enregistrés.");
-      } catch (error) {
+    setPending(true);
+    saveWorkingHours(staffMemberId, ranges)
+      .then(() => toast.success("Horaires habituels enregistrés."))
+      .catch((error) => {
         toast.error(
           error instanceof Error ? error.message : "Une erreur est survenue.",
         );
-      }
-    });
+      })
+      .finally(() => setPending(false));
   }
 
   return (
