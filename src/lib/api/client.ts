@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { TOKEN_COOKIE } from "./constants";
 
 const API_URL = process.env.API_URL ?? "http://localhost:4000";
+const REQUEST_TIMEOUT_MS = 30_000;
 export { TOKEN_COOKIE };
 
 export class ApiError extends Error {
@@ -33,12 +34,16 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = (await cookies()).get(TOKEN_COOKIE)?.value;
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
+  // Sans timeout, une requête qui reste bloquée (réseau instable, pic de
+  // charge...) ne se termine jamais : le bouton qui l'a déclenchée (via
+  // useTransition côté client) reste figé jusqu'à un changement de page.
   let res: Response;
   try {
     res = await fetch(`${API_URL}${path}`, {
       ...options,
       headers,
       cache: "no-store",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
   } catch {
     throw new ApiError(0, "Impossible de contacter le serveur.");

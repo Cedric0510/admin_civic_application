@@ -138,4 +138,27 @@ describe("api client", () => {
       message: "Impossible de contacter le serveur.",
     });
   });
+
+  it("gives every request an abort signal, so a stuck request cannot hang forever", async () => {
+    let capturedInit: RequestInit | undefined;
+    global.fetch = vi.fn().mockImplementation((_url, init) => {
+      capturedInit = init as RequestInit;
+      return Promise.resolve(new Response("{}", { status: 200 }));
+    });
+
+    await api.get("/x");
+
+    expect(capturedInit?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("wraps a timed-out request the same way as any other transport failure", async () => {
+    global.fetch = vi
+      .fn()
+      .mockRejectedValue(new DOMException("The operation was aborted.", "TimeoutError"));
+
+    await expect(api.get("/x")).rejects.toMatchObject({
+      status: 0,
+      message: "Impossible de contacter le serveur.",
+    });
+  });
 });
