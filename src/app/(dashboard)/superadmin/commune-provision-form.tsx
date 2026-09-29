@@ -6,17 +6,26 @@ import { FormActions } from "@/components/layout/form-actions";
 import { NewCredentialsFields } from "@/components/layout/new-credentials-fields";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   COMMUNE_ADMIN_CREDENTIAL_FIELDS,
   newCredentialsError,
 } from "@/lib/credentials";
+import { slugify } from "@/lib/slug";
 import { describeWeatherResult } from "@/lib/weather-messages";
 
 export function CommuneProvisionForm() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [slugTouched, setSlugTouched] = useState(false);
+
+  function handleNameChange(value: string) {
+    setName(value);
+    if (!slugTouched) setSlug(slugify(value));
+  }
 
   function handleSubmit(formData: FormData) {
     const mismatch = newCredentialsError(
@@ -52,7 +61,13 @@ export function CommuneProvisionForm() {
           Commune
         </legend>
         <Field label="Nom *" id="communeName">
-          <Input name="communeName" placeholder="Bessan" required />
+          <Input
+            name="communeName"
+            placeholder="Bessan"
+            value={name}
+            onChange={(event) => handleNameChange(event.target.value)}
+            required
+          />
         </Field>
         <Field
           label="Code postal *"
@@ -72,11 +87,16 @@ export function CommuneProvisionForm() {
         <Field
           label="Identifiant (slug) *"
           id="communeSlug"
-          hint="Minuscules, chiffres et tirets uniquement. Utilisé par l'application mobile pour identifier la commune."
+          hint="Identifiant technique utilisé dans les liens de l'application -- sans lien avec la météo, qui utilise le code postal ci-dessus. Déduit automatiquement du nom, modifiable si besoin."
         >
           <Input
             name="communeSlug"
             placeholder="bessan"
+            value={slug}
+            onChange={(event) => {
+              setSlugTouched(true);
+              setSlug(event.target.value);
+            }}
             pattern="[a-z0-9]+(-[a-z0-9]+)*"
             title="Minuscules, chiffres et tirets uniquement (ex. ma-commune)."
             required

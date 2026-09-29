@@ -4,6 +4,8 @@ import { getCommunes } from "@/app/actions/superadmin";
 import { PageHeader } from "@/components/layout/page-header";
 import { WeatherStatusPanel } from "@/components/weather-status-panel";
 import { toWeatherSnapshot } from "@/lib/weather-snapshot";
+import { CommuneInfoForm } from "./commune-info-form";
+import { DeletionCard } from "./deletion-card";
 import { ModulesForm } from "./modules-form";
 import { SuspensionCard } from "./suspension-card";
 
@@ -27,12 +29,24 @@ export default async function CommuneAccessPage({
         backLabel="Toutes les communes"
       />
 
+      <CommuneInfoForm
+        communeId={commune.id}
+        name={commune.name}
+        postalCode={commune.postalCode}
+        slug={commune.slug}
+      />
+
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-foreground">Accès</h2>
         <SuspensionCard
           communeId={commune.id}
           communeName={commune.name}
           suspendedAt={commune.suspendedAt}
+        />
+        <DeletionCard
+          communeId={commune.id}
+          communeName={commune.name}
+          suspended={commune.suspendedAt !== null}
         />
       </section>
 

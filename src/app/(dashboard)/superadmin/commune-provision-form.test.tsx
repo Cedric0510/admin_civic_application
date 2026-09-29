@@ -50,6 +50,30 @@ beforeEach(() => {
 });
 
 describe("CommuneProvisionForm", () => {
+  it("fills the slug in from the name, so the field needs no thought", () => {
+    render(<CommuneProvisionForm />);
+
+    const [communeName] = screen.getAllByLabelText("Nom *");
+    fireEvent.change(communeName, { target: { value: "Saint-Martin" } });
+
+    expect(screen.getByLabelText("Identifiant (slug) *")).toHaveValue(
+      "saint-martin",
+    );
+  });
+
+  it("stops overwriting the slug once it has been edited by hand", () => {
+    render(<CommuneProvisionForm />);
+
+    const [communeName] = screen.getAllByLabelText("Nom *");
+    fireEvent.change(communeName, { target: { value: "Saint-Martin" } });
+    fill("Identifiant (slug) *", "saint-martin-village");
+    fireEvent.change(communeName, { target: { value: "Saint-Martin 2" } });
+
+    expect(screen.getByLabelText("Identifiant (slug) *")).toHaveValue(
+      "saint-martin-village",
+    );
+  });
+
   it("provisions the commune when the administrator credentials are confirmed", async () => {
     render(<CommuneProvisionForm />);
 

@@ -42,6 +42,25 @@ export async function setCommuneSuspended(
   revalidatePath(`/superadmin/${communeId}`);
 }
 
+// Corrige une commune après coup (nom, code postal, slug) : réservé aux
+// super-admins côté civic_api (updateMine), utilisable depuis la fiche
+// d'une commune sans avoir à "entrer" dedans comme le fait Paramètres.
+export async function updateCommuneInfo(
+  communeId: string,
+  data: { name?: string; postalCode?: string; slug?: string },
+): Promise<void> {
+  await api.patch(`/communes/me?communeId=${communeId}`, data);
+  revalidatePath("/superadmin");
+  revalidatePath(`/superadmin/${communeId}`);
+}
+
+// Définitif : civic_api refuse tant que la commune n'est pas suspendue
+// (CommunesService.remove). Sert à rattraper une commune créée par erreur.
+export async function deleteCommune(communeId: string): Promise<void> {
+  await api.delete(`/communes/${communeId}`);
+  revalidatePath("/superadmin");
+}
+
 // Provisionne une commune et son premier administrateur en une seule
 // action : POST /communes n'a pas de contrepartie DELETE, donc si la
 // création du compte admin échoue (email déjà utilisé, par ex.), la

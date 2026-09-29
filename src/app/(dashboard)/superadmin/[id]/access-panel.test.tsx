@@ -3,19 +3,30 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const setModulesMock = vi.fn();
 const setSuspendedMock = vi.fn();
+const updateCommuneInfoMock = vi.fn();
+const deleteCommuneMock = vi.fn();
 vi.mock("@/app/actions/superadmin", () => ({
   setCommuneModules: setModulesMock,
   setCommuneSuspended: setSuspendedMock,
+  updateCommuneInfo: updateCommuneInfoMock,
+  deleteCommune: deleteCommuneMock,
 }));
+const pushMock = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: pushMock }) }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const { ModulesForm } = await import("./modules-form");
 const { SuspensionCard } = await import("./suspension-card");
+const { CommuneInfoForm } = await import("./commune-info-form");
+const { DeletionCard } = await import("./deletion-card");
 const { toast } = await import("sonner");
 
 beforeEach(() => {
   setModulesMock.mockReset().mockResolvedValue(undefined);
   setSuspendedMock.mockReset().mockResolvedValue(undefined);
+  updateCommuneInfoMock.mockReset().mockResolvedValue(undefined);
+  deleteCommuneMock.mockReset().mockResolvedValue(undefined);
+  pushMock.mockClear();
   vi.mocked(toast.success).mockClear();
   vi.mocked(toast.error).mockClear();
 });
@@ -141,5 +152,117 @@ describe("SuspensionCard", () => {
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith("Réservé au super-administrateur."),
     );
+  });
+});
+
+describe("CommuneInfoForm", () => {
+  const props = {
+    communeId: "c1",
+    name: "Bessan",
+    postalCode: "34550",
+    slug: "bessan",
+  };
+
+  it("disables saving until something actually changed", () => {
+    render(<CommuneInfoForm {...props} />);
+
+    expect(screen.getByRole("button", { name: "Enregistrer" })).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText("Nom"), {
+      target: { value: "Bessan-sur-Mer" },
+    });
+
+    expect(screen.getByRole("button", { name: "Enregistrer" })).toBeEnabled();
+  });
+
+  it("sends only the fields that changed, super-admin included the slug", async () => {
+    render(<CommuneInfoForm {...props} />);
+
+    fireEvent.change(screen.getByLabelText("Identifiant (slug)"), {
+      target: { value: "bessan-corrige" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    await waitFor(() =>
+      expect(updateCommuneInfoMock).toHaveBeenCalledWith("c1", {
+        slug: "bessan-corrige",
+      }),
+    );
+    expect(toast.success).toHaveBeenCalled();
+  });
+
+  it("explains a conflict on the slug", async () => {
+    updateCommuneInfoMock.mockRejectedValue(
+      new Error("Ce slug est déjà utilisé."),
+    );
+    render(<CommuneInfoForm {...props} />);
+
+    fireEvent.change(screen.getByLabelText("Identifiant (slug)"), {
+      target: { value: "deja-pris" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith("Ce slug est déjà utilisé."),
+    );
+  });
+});
+
+describe("DeletionCard", () => {
+  it("cannot be used while the commune is still active", () => {
+    render(<DeletionCard communeId="c1" communeName="Bessan" suspended={false} />);
+
+    expect(screen.getByRole("button", { name: "Supprimer" })).toBeDisabled();
+    expect(
+      screen.getByText(/Suspendez d'abord l'accès/),
+    ).toBeInTheDocument();
+  });
+
+  it("deletes the commune once suspended, after confirming, then leaves the page", async () => {
+    render(<DeletionCard communeId="c1" communeName="Bessan" suspended={true} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer" }));
+    expect(
+      await screen.findByText("Supprimer « Bessan » ?"),
+    ).toBeInTheDocument();
+    expect(deleteCommuneMock).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Supprimer définitivement" }),
+    );
+
+    await waitFor(() => expect(deleteCommuneMock).toHaveBeenCalledWith("c1"));
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/superadmin"));
+  });
+
+  it("deletes nothing when the confirmation is cancelled", async () => {
+    render(<DeletionCard communeId="c1" communeName="Bessan" suspended={true} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Annuler" }));
+
+    await waitFor(() =>
+      expect(screen.queryByText("Supprimer « Bessan » ?")).not.toBeInTheDocument(),
+    );
+    expect(deleteCommuneMock).not.toHaveBeenCalled();
+  });
+
+  it("explains a failure without leaving the page", async () => {
+    deleteCommuneMock.mockRejectedValue(
+      new Error("Suspendez la commune avant de la supprimer."),
+    );
+    render(<DeletionCard communeId="c1" communeName="Bessan" suspended={true} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Supprimer définitivement" }),
+    );
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        "Suspendez la commune avant de la supprimer.",
+      ),
+    );
+    expect(pushMock).not.toHaveBeenCalled();
   });
 });
