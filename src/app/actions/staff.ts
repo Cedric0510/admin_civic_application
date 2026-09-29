@@ -6,13 +6,11 @@ import {
   newCredentialsError,
   STAFF_CREDENTIAL_FIELDS,
 } from "@/lib/credentials";
-import { getManagedCommune, type CurrentStaff } from "@/lib/session";
+import { getManagedCommune } from "@/lib/session";
 import type { StaffMember, StaffRole } from "@/lib/types";
 
-// `staff` : mêmes raisons que getManagedCommune (évite un second GET
-// /staff/me quand l'appelant a déjà chargé la session courante).
-export async function getStaff(staff?: CurrentStaff | null): Promise<StaffMember[]> {
-  const commune = await getManagedCommune(staff);
+export async function getStaff(): Promise<StaffMember[]> {
+  const commune = await getManagedCommune();
   // Sans commune gérée (super-admin qui n'a encore rien choisi), civic_api
   // renvoie tout le staff toutes communes confondues -- pas le bon défaut
   // pour cette page, qui affiche "les agents de la commune en cours".

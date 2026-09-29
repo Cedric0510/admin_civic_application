@@ -37,7 +37,7 @@ export default async function AgendaPage({
   const isAgent = staff.role === "AGENT";
   const members = isAgent
     ? []
-    : (await getStaff(staff)).filter((member) => member.role !== "SUPER_ADMIN");
+    : (await getStaff()).filter((member) => member.role !== "SUPER_ADMIN");
   const agentId = isAgent
     ? staff.id
     : (members.find((member) => member.id === agent) ??
