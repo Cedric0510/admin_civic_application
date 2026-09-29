@@ -145,7 +145,9 @@ export function AppointmentsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {appointments.map((appt) => (
+            {appointments.map((appt) => {
+              const label = appt.visitorName ?? appt.citizen.email;
+              return (
               <TableRow key={appt.id}>
                 <TableCell label="Rendez-vous">
                   <div className="space-y-1 max-lg:flex max-lg:flex-col max-lg:items-end">
@@ -162,8 +164,15 @@ export function AppointmentsTable({
                 </TableCell>
                 <TableCell label="Habitant" className="max-w-xs">
                   <div className="min-w-0">
+                    <p className="break-words text-sm font-medium lg:truncate">
+                      {appt.visitorName ?? (
+                        <span className="italic text-muted-foreground">
+                          Nom non renseigné
+                        </span>
+                      )}
+                    </p>
                     <p
-                      className="break-words text-sm font-medium lg:truncate"
+                      className="break-words text-xs text-muted-foreground lg:truncate"
                       title={appt.citizen.email}
                     >
                       {appt.citizen.email}
@@ -184,7 +193,7 @@ export function AppointmentsTable({
                     <StatusSelect
                       value={appt.status}
                       options={statusLabels}
-                      label={`Statut du rendez-vous de ${appt.citizen.email}`}
+                      label={`Statut du rendez-vous de ${label}`}
                       disabled={pending}
                       onChange={(status) => handleStatusChange(appt.id, status)}
                     />
@@ -192,15 +201,16 @@ export function AppointmentsTable({
                 </TableCell>
                 <TableCell className="text-right">
                   <ConfirmDeleteButton
-                    label={`Supprimer le rendez-vous de ${appt.citizen.email}`}
+                    label={`Supprimer le rendez-vous de ${label}`}
                     title="Supprimer le rendez-vous ?"
-                    description={`Le rendez-vous de ${appt.citizen.email} sera définitivement supprimé.`}
+                    description={`Le rendez-vous de ${label} sera définitivement supprimé.`}
                     pending={pending}
                     onConfirm={() => handleDelete(appt.id)}
                   />
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       )}

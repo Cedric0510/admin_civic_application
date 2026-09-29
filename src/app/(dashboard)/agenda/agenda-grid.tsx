@@ -160,9 +160,10 @@ export function AgendaGrid({ week }: { week: AgendaWeek }) {
                 <span
                   key={appointment.id}
                   className="block truncate rounded bg-blue-600 px-1 text-white"
-                  title={`${appointment.serviceName} — ${appointment.citizenEmail}`}
+                  title={`${appointment.serviceName} — ${appointment.visitorName ?? appointment.citizenEmail} (${appointment.citizenEmail})`}
                 >
-                  {formatTime(appointment.startsAt)} {appointment.serviceName}
+                  {formatTime(appointment.startsAt)}{" "}
+                  {appointment.visitorName ?? appointment.serviceName}
                 </span>
               ))}
             </button>

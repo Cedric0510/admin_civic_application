@@ -37,6 +37,7 @@ export type Appointment = {
   id: string;
   startsAt: string;
   endsAt: string;
+  visitorName: string | null;
   message: string | null;
   status: AppointmentStatus;
   createdAt: string;
@@ -97,6 +98,7 @@ export type AgendaWeek = {
     status: AppointmentStatus;
     serviceName: string;
     citizenEmail: string;
+    visitorName: string | null;
   }[];
 };
 
